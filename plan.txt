@@ -1,0 +1,12 @@
+input clicks, display simple poly using qt
+
+poly class:
+    given 1st division point, calculate 2nd point
+        divide poly into slices
+        calculate area of each slice
+        gen graph of area as fuction of dividing line rotation
+        determine division points
+    export data for poly viewing and graph
+
+display graph of area swept per rotation using qt
+    interactive?
