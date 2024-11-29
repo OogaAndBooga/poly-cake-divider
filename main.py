@@ -5,6 +5,7 @@ from __future__ import annotations
 
 """PySide6 port of the widgets/painting/basicdrawing example from Qt v5.x, originating from PyQt"""
 
+# from PySide6 import QMath
 from PySide6.QtCore import QPoint, QRect, QSize, Qt, qVersion
 from PySide6.QtGui import (QBrush, QConicalGradient, QLinearGradient, QPainter,
                            QPainterPath, QPalette, QPen, QPixmap, QPolygon,
@@ -14,7 +15,11 @@ from PySide6.QtWidgets import (QApplication, QCheckBox, QComboBox, QGridLayout,
 
 # import basicdrawing_rc  # noqa: F401
 
-import time
+from time import time
+from math import dist
+# def qpToTup(qpoint):
+#     return (qpoint)
+
 
 class RenderArea(QWidget):
     points = []
@@ -40,20 +45,37 @@ class RenderArea(QWidget):
         self.setBackgroundRole(QPalette.Base)
         self.setAutoFillBackground(True)
 
+        self.setMouseTracking(True)
+
     def minimumSizeHint(self):
         return QSize(400, 400)
 
     #draw window size
     def sizeHint(self):
-        return QSize(300, 300)
+        return QSize(400, 400)
 
-    mclicks = 0
+    MouseNear = False
+    finishedInput = False
+
+    def setMouseNear(self, value):
+        if value != self.MouseNear:
+            self.update()
+        self.MouseNear = value
+
+    def mouseMoveEvent(self, event):
+        if len(self.points) > 2 and dist(self.points[0].toTuple(), event.pos().toTuple()) < 10:
+            self.setMouseNear(True)
+        else:
+            self.setMouseNear(False)
+
     def mousePressEvent(self, event):
-        print(event.pos())
-        # self.mclicks += 10
-        self.points.append(event.pos())
+        if not self.MouseNear:
+            self.points.append(event.pos())
+        else:
+            self.points.append(self.points[0])
+            self.finishedInput = True
         self.update()
-        #trigers a redraw of schreen
+        #trigers a redraw of screen
 
     def paintEvent(self, event):
 
@@ -61,7 +83,20 @@ class RenderArea(QWidget):
             painter.setPen(self.pen)
             painter.setBrush(self.brush)
 
+            painter.save()
+            # if self.finishedInput:
+            #     # painter.translate(-200, -200)
+            #     painter.rotate(time()*2)
             painter.drawPolyline(RenderArea.points)
+
+            r = 4
+            if self.MouseNear:
+                painter.drawEllipse(self.points[0], r, r)
+
+            if len(self.points) == 1:
+                painter.drawEllipse(self.points[0], r, r)
+
+            painter.restore()
 
             painter.setPen(self.palette().dark().color())
             painter.setBrush(Qt.NoBrush)
