@@ -6,6 +6,7 @@ from __future__ import annotations
 """PySide6 port of the widgets/painting/basicdrawing example from Qt v5.x, originating from PyQt"""
 
 # from PySide6 import QMath
+# import PySide6
 from PySide6.QtCore import QPoint, QRect, QSize, Qt, qVersion
 from PySide6.QtGui import (QBrush, QConicalGradient, QLinearGradient, QPainter,
                            QPainterPath, QPalette, QPen, QPixmap, QPolygon,
@@ -14,6 +15,8 @@ from PySide6.QtWidgets import (QApplication, QCheckBox, QComboBox, QGridLayout,
                                QLabel, QSpinBox, QWidget)
 
 # import basicdrawing_rc  # noqa: F401
+# noqa: 1234
+from polygon import Polygon
 
 from time import time
 from math import dist
@@ -21,8 +24,26 @@ from math import dist
 #     return (qpoint)
 
 
+# class Program:
+    # def __init__(self, render_area):
+
+
+
 class RenderArea(QWidget):
+
+    points = [QPoint(103, 186),
+              QPoint(164, 84),
+              QPoint(294, 89),
+              QPoint(292, 235),
+              QPoint(242, 320),
+              QPoint(112, 311),
+              QPoint(111, 249)]
+
     points = []
+
+    origin = QPoint(0, 0)
+    int = []
+    stage = 0
     # points = QPolygon([
     #     QPoint(40, 80),
     #     QPoint(50, 70),
@@ -69,15 +90,26 @@ class RenderArea(QWidget):
             self.setMouseNear(False)
 
     def mousePressEvent(self, event):
-        if not self.MouseNear:
-            self.points.append(event.pos())
-        else:
-            self.points.append(self.points[0])
-            self.finishedInput = True
+        if self.stage == 0:
+            if not self.MouseNear:
+                self.points.append(event.pos())
+            else:
+                self.stage += 1
+                self.poly = Polygon([p.toTuple() for p in self.points])
+                print(self.points)
+                # self.points.append(self.points[0])
+                # self.finishedInput = True
+        elif self.stage == 1:
+            self.origin = event.pos()
+            self.int = self.poly.gen_bowties(self.origin)
+            self.int = [QPoint(*p) for p in self.int]
         self.update()
         #trigers a redraw of screen
 
     def paintEvent(self, event):
+
+        def drawP(pos, r):
+            painter.drawEllipse(pos, r, r)
 
         with QPainter(self) as painter:
             painter.setPen(self.pen)
@@ -87,7 +119,13 @@ class RenderArea(QWidget):
             # if self.finishedInput:
             #     # painter.translate(-200, -200)
             #     painter.rotate(time()*2)
-            painter.drawPolyline(RenderArea.points)
+            if self.stage == 0:
+                painter.drawPolyline(RenderArea.points)
+            elif self.stage == 1:
+                painter.drawPolygon(self.points)
+                drawP(self.origin, 5)
+                for p in self.int:
+                    drawP(p, 6)
 
             r = 4
             if self.MouseNear:
