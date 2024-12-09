@@ -17,17 +17,10 @@ from PySide6.QtWidgets import (QApplication, QCheckBox, QComboBox, QGridLayout,
 # import basicdrawing_rc  # noqa: F401
 # noqa: 1234
 from polygon import Polygon
+from programlogic import Program_Logic
 
 from time import time
 from math import dist
-# def qpToTup(qpoint):
-#     return (qpoint)
-
-
-# class Program:
-    # def __init__(self, render_area):
-
-
 
 class RenderArea(QWidget):
 
@@ -41,9 +34,11 @@ class RenderArea(QWidget):
 
     points = []
 
-    origin = QPoint(0, 0)
-    int = []
-    stage = 0
+    primitives = {'points' : [],
+                      'polyline' : [],
+                      'polygon' : []
+                      }
+
     # points = QPolygon([
     #     QPoint(40, 80),
     #     QPoint(50, 70),
@@ -75,64 +70,39 @@ class RenderArea(QWidget):
     def sizeHint(self):
         return QSize(400, 400)
 
-    MouseNear = False
-    finishedInput = False
-
-    def setMouseNear(self, value):
-        if value != self.MouseNear:
-            self.update()
-        self.MouseNear = value
+    def pass_program_logic_instance(self, program_instance):
+        self.program = program_instance
 
     def mouseMoveEvent(self, event):
-        if len(self.points) > 2 and dist(self.points[0].toTuple(), event.pos().toTuple()) < 10:
-            self.setMouseNear(True)
-        else:
-            self.setMouseNear(False)
+        self.program.mouse_move_event(event.pos().toTuple())
 
     def mousePressEvent(self, event):
-        if self.stage == 0:
-            if not self.MouseNear:
-                self.points.append(event.pos())
-            else:
-                self.stage += 1
-                self.poly = Polygon([p.toTuple() for p in self.points])
-                print(self.points)
-                # self.points.append(self.points[0])
-                # self.finishedInput = True
-        elif self.stage == 1:
-            self.origin = event.pos()
-            self.int = self.poly.gen_bowties(self.origin)
-            self.int = [QPoint(*p) for p in self.int]
-        self.update()
-        #trigers a redraw of screen
+        self.program.click_event(event.pos().toTuple())
+
 
     def paintEvent(self, event):
 
-        def drawP(pos, r):
+        print(event,self.primitives)
+
+        def drawP(pos, r = 6):
             painter.drawEllipse(pos, r, r)
+
 
         with QPainter(self) as painter:
             painter.setPen(self.pen)
             painter.setBrush(self.brush)
 
             painter.save()
-            # if self.finishedInput:
-            #     # painter.translate(-200, -200)
-            #     painter.rotate(time()*2)
-            if self.stage == 0:
-                painter.drawPolyline(RenderArea.points)
-            elif self.stage == 1:
-                painter.drawPolygon(self.points)
-                drawP(self.origin, 5)
-                for p in self.int:
-                    drawP(p, 6)
 
-            r = 4
-            if self.MouseNear:
-                painter.drawEllipse(self.points[0], r, r)
+            if self.primitives['points'] != []:
+                for p in self.primitives['points']:
+                    drawP(QPoint(*p))
 
-            if len(self.points) == 1:
-                painter.drawEllipse(self.points[0], r, r)
+            if self.primitives['polyline'] != []:
+                painter.drawPolyline( [QPoint(*p) for p in self.primitives['polyline']])
+
+            if self.primitives['polygon'] != []:
+                painter.drawPolygon([QPoint(*p) for p in self.primitives['polygon']])
 
             painter.restore()
 
@@ -147,12 +117,17 @@ class Window(QWidget):
     def __init__(self):
         super().__init__()
 
-        self._render_area = RenderArea()
+        self.render_area = RenderArea()
+        self.program_logic = Program_Logic()
+
+        self.render_area.pass_program_logic_instance(self.program_logic)
+        self.program_logic.pass_render_area_instance(self.render_area)
+
 
         main_layout = QGridLayout()
         main_layout.setColumnStretch(0, 1)
         main_layout.setColumnStretch(3, 1)
-        main_layout.addWidget(self._render_area, 0, 0, 1, 4)
+        main_layout.addWidget(self.render_area, 0, 0, 1, 4)
         main_layout.setRowMinimumHeight(1, 6)
         self.setLayout(main_layout)
 

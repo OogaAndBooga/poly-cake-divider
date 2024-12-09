@@ -17,13 +17,14 @@ class Segment :
         r = ray.direction
 
         if not sp:
-            #TODO fix the bug
+            #TODO fix the bug(slowness)
             # r = ray.direction
             k = (abs(b) ** 2 - c @ b - (abs(a) ** 2) * (r @ b) / (a @ r)) / ((b @ r) * (a @ c) / (a @ r) - (b @ c))
             d = (abs(a) ** 2 + k * (a @ c)) / (a @ r)
             solution = {'d':float(d), 'k':float(k)}
             print(solution)
         else:
+            #TODO divide by zero potential error
             d, k = symbols('d, k') #d scales ray and k scales c  up to intersection point
             eq1 = Eq(d * float(a @ ray.direction) - k * (a @ c), abs(a) ** 2)
             eq2 = Eq(d * float(b @ ray.direction) - k * (b @ c), abs(b) ** 2 - c @ b)
