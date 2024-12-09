@@ -1,19 +1,16 @@
+input clicks, display simple poly using qt
 
 poly class:
 
     export data for poly viewing
         and graph
 
-    gen_bowties:
-        calculate intersection point
-        determine if ray intersects segment
-
-
     given 1st division point, calculate 2nd point
         divide poly into slices
         calculate area of each slice
         gen graph of area as fuction of dividing line rotation
         determine division points
+
 
 display graph of area swept per rotation using qt
     interactive?
