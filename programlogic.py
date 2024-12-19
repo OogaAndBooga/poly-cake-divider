@@ -1,5 +1,6 @@
 from math import dist
 from polygon import Polygon
+from data_structures import total_calculations
 
 class Program_Logic():
     stage = 0
@@ -53,6 +54,7 @@ class Program_Logic():
                 self.origin = pos
                 self.origin_is_set = True
 
+                total_calculations[0] = 0
                 self.tempbowtiedata = self.poly.gen_bowties(self.origin)
 
                 self.update_screen()
