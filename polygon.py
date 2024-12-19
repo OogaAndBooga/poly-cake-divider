@@ -44,7 +44,7 @@ class Polygon :
         self.bowties = []
         for i in range(len(self.rays) - 1):
             self.bowties.append(Bowtie(self.origin, self.rays[i], self.rays[i+1]))
-        self.bowties.append(Bowtie(self.origin, self.rays[-1], self.rays[1]))
+        self.bowties.append(Bowtie(self.origin, self.rays[-1], self.rays[0]))
 
 
     def display_ray(self, index):
