@@ -1,7 +1,29 @@
 import copy
 
+total_calculations = 0
+
 def toTuple(vec):
     return (vec.x, vec.y)
+
+def seg_ray_intersection_math(segment, ray):
+    a = segment.a - ray.origin
+    b = segment.b - ray.origin
+    c = segment.c
+    r = ray.direction
+
+    #TODO increase speed of computations
+    #FIXME divide by zero potential error
+
+    k = (abs(b) ** 2 - c @ b - (abs(a) ** 2) * (r @ b) / (a @ r)) / ((b @ r) * (a @ c) / (a @ r) - (b @ c))
+    d = (abs(a) ** 2 + k * (a @ c)) / (a @ r)
+    solution = {'d':float(d), 'k':float(k)}
+
+    global total_calculations
+    print(total_calculations, solution)
+
+
+    total_calculations += 1
+    return solution
 
 class Segment :
     def __init__(self, a, b):
@@ -9,31 +31,19 @@ class Segment :
         self.b = b
         self.c = b - a
 
-    def ray_intersection_math(self, ray, sp = False):
-        a = self.a - ray.origin
-        b = self.b - ray.origin
-        c = self.c
-        r = ray.direction
-
-        if not sp:
-            #this "solution" is slow
-            # r = ray.direction
-            k = (abs(b) ** 2 - c @ b - (abs(a) ** 2) * (r @ b) / (a @ r)) / ((b @ r) * (a @ c) / (a @ r) - (b @ c))
-            d = (abs(a) ** 2 + k * (a @ c)) / (a @ r)
-            solution = {'d':float(d), 'k':float(k)}
-            print(solution)
-        else:
-            #TODO increase speed of computations
-            #FIXME divide by zero potential error
-            d, k = symbols('d, k') #d scales ray and k scales c  up to intersection point
-            eq1 = Eq(d * float(a @ ray.direction) - k * (a @ c), abs(a) ** 2)
-            eq2 = Eq(d * float(b @ ray.direction) - k * (b @ c), abs(b) ** 2 - c @ b)
-
-            solution = solve([eq1, eq2], [d, k], particular = True, quick=True)
-            print(solution)
-            solution = {'d' : solution[d], 'k' : solution[k]}
-
+    def ray_intersection_math(self, ray):
+        solution = seg_ray_intersection_math(self, ray)
         return solution
+        #     #this "solution" is slow
+        #     d, k = symbols('d, k') #d scales ray and k scales c  up to intersection point
+        #     eq1 = Eq(d * float(a @ ray.direction) - k * (a @ c), abs(a) ** 2)
+        #     eq2 = Eq(d * float(b @ ray.direction) - k * (b @ c), abs(b) ** 2 - c @ b)
+        #
+        #     solution = solve([eq1, eq2], [d, k], particular = True, quick=True)
+        #     print(solution)
+        #     solution = {'d' : solution[d], 'k' : solution[k]}
+        #
+        # return solution
 
 class Intersection:
     def __init__(self, point, segment):
