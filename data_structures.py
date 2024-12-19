@@ -19,7 +19,7 @@ def seg_ray_intersection_math(segment, ray):
     solution = {'d':float(d), 'k':float(k)}
 
     global total_calculations
-    print(total_calculations[0], solution)
+    # print(total_calculations[0], solution)
 
 
     total_calculations[0] += 1
@@ -96,9 +96,6 @@ class Bowtie :
         self.ray2 = ray2
 
         self.gen_ladder_rungs()
-
-        #removes intersections not in common
-        # self.remove_bad()
 
     #assuming polyline does not intersect itself, neither will the ladder rungs
     #BUG does not work all the time

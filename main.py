@@ -36,7 +36,11 @@ class Window(QWidget):
         self.render_area.pass_program_logic_instance(self.program_logic)
         self.program_logic.pass_render_area_instance(self.render_area)
 
+        #simulate user input
         self.program_logic.polyline = poly1
+        self.program_logic.mouse_near = True
+        self.program_logic.click_event(poly1[0])
+        self.program_logic.click_event((236, 367))
         # self.program_logic.polyline = [(116, 206), (191, 75), (311, 149), (219, 344), (140, 359), (247, 227)]
         # self.program_logic.stage = 1
 

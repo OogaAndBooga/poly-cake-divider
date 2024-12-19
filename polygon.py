@@ -8,6 +8,7 @@ def toTuple(vec):
 
 
 class Polygon :
+    # btindex = 0
 
     def __init__(self, points):
         self.points = points
@@ -46,20 +47,29 @@ class Polygon :
         self.bowties.append(Bowtie(self.origin, self.rays[-1], self.rays[1]))
 
 
+    def display_ray(self, index):
+        ray = self.rays[index]
 
-        # breakpoint()
-        # print("NUMBER OF BOWTIES{len(self.bowties)}")
-        bt = self.bowties[0]
-        fb = self.bowties[0].rungs
-        # breakpoint()
-        # prin
+        l = lambda a:a.segment
+        fb = [(toTuple(l(i).a), toTuple(l(i).b)) for i in ray.intersections]
+
+        rl = [ray.gen_line_tuple()]
+
+        return fb + rl
+
+    def display_bowtie(self, index):
+
+        bt = self.bowties[index]
+        fb = bt.rungs
 
 
         fb = [(toTuple(seg.a), toTuple(seg.b)) for seg in fb]
 
-        rys = [self.bowties[0].ray1.gen_line_tuple(), self.bowties[0].ray2.gen_line_tuple()]
-        print(f"FB, RED DATA:{fb}")
-        print(f"RED DATA LENGTH(rys):{len(rys)}")
+        rys = [bt.ray1.gen_line_tuple(), bt.ray2.gen_line_tuple()]
+
+        # print(f"FB, RED DATA:{fb}")
+        # print(f"RED DATA LENGTH(rys):{len(rys)}")
+        # print(f'BOWTIE INDEX {index}')
         return fb + rys
 
         # for ray in self.rays:

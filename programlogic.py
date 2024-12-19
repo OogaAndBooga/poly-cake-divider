@@ -1,8 +1,10 @@
 from math import dist
 from polygon import Polygon
 from data_structures import total_calculations
+import time
 
 class Program_Logic():
+    btindex = 0
     stage = 0
     polyline = [] # before creation of polygon
     mouse_near = False # mouse within a certain distance to polyline origin
@@ -28,6 +30,26 @@ class Program_Logic():
         self.mouse_near = value
         if must_update:
             self.update_screen()
+
+    def key_press_event(self, key):
+        if key in ['up','down']:
+            if key == 'up':
+                self.btindex += 1
+            elif key == 'down':
+                self.btindex -= 1
+
+            if abs(self.btindex) >= len(self.poly.bowties):
+                self.btindex = 0
+
+            # if self.btindex < 0:
+            #     self.btindex = 0
+
+            # self.tempbowtiedata = self.poly.display_ray(self.btindex)
+
+            self.tempbowtiedata = self.poly.display_bowtie(self.btindex)
+
+            self.update_screen()
+
 
     def mouse_move_event(self, pos):
         if self.stage == 0:
@@ -55,7 +77,14 @@ class Program_Logic():
                 self.origin_is_set = True
 
                 total_calculations[0] = 0
-                self.tempbowtiedata = self.poly.gen_bowties(self.origin)
+
+                t1 = time.time()
+                self.poly.gen_bowties(self.origin)
+                t2 = time.time()
+                print(f'CALCULATED {total_calculations[0]} INTERSECTIONS IN {round(t2-t1,2)} seconds')
+
+                # self.tempbowtiedata = self.poly.display_ray(self.btindex)
+                self.tempbowtiedata = self.poly.display_bowtie(self.btindex)
 
                 self.update_screen()
 
@@ -79,8 +108,9 @@ class Program_Logic():
                 primitives['points'] += [self.origin]
                 redlines += self.tempbowtiedata
 
-        print('PRIMITIVES SENT TO RENDERAREA', primitives)
-        print(f'NUMBER OF RED ELEMENTS: {len(redlines)}')
+        # print('PRIMITIVES SENT TO RENDERAREA', primitives)
+        # print(f'NUMBER OF BLACK PRIMITIVES {len(primitives)}')
+        print(f'NUMBER OF RED RUNGS: {len(redlines) - 2}')
         self.render_area.primitives = primitives
         self.render_area.redlines = redlines
         self.render_area.update()

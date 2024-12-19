@@ -5,6 +5,8 @@ from PySide6.QtGui import (QBrush, QConicalGradient, QLinearGradient, QPainter,
 
 from PySide6.QtWidgets import QWidget
 
+import sys
+
 class RenderArea(QWidget):
     points = []
 
@@ -33,6 +35,7 @@ class RenderArea(QWidget):
         self.setBackgroundRole(QPalette.Base)
         self.setAutoFillBackground(True)
 
+        self.setFocusPolicy(Qt.StrongFocus)
         self.setMouseTracking(True)
 
     def minimumSizeHint(self):
@@ -51,10 +54,23 @@ class RenderArea(QWidget):
     def mousePressEvent(self, event):
         self.program.click_event(event.pos().toTuple())
 
+    def keyPressEvent(self, event):
+        key = event.key()
+        pressed = None
+        if key == Qt.Key_Q:
+            sys.exit()
+        if key == Qt.Key_K:
+            pressed = 'up'
+        if key == Qt.Key_M:
+            pressed = 'down'
+        print(f'\nKEYPRESS EVENT: {event}')
+
+        self.program.key_press_event(pressed)
+        # breakpoint()
 
     def paintEvent(self, event):
 
-        print(event,self.primitives)
+        # print(event,self.primitives)
 
         def drawP(pos, r = 6):
             painter.drawEllipse(pos, r, r)
