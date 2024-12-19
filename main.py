@@ -7,20 +7,20 @@ from __future__ import annotations
 
 # from PySide6 import QMath
 # import PySide6
-from PySide6.QtCore import QPoint, QRect, QSize, Qt, qVersion
+from PySide6.QtCore import QLine, QPoint, QRect, QSize, Qt, qVersion
 from PySide6.QtGui import (QBrush, QConicalGradient, QLinearGradient, QPainter,
                            QPainterPath, QPalette, QPen, QPixmap, QPolygon,
                            QRadialGradient)
 from PySide6.QtWidgets import (QApplication, QCheckBox, QComboBox, QGridLayout,
                                QLabel, QSpinBox, QWidget)
 
-# import basicdrawing_rc  # noqa: F401
-# noqa: 1234
 from polygon import Polygon
 from programlogic import Program_Logic
 
 from time import time
 from math import dist
+
+from test_polygons import *
 
 class RenderArea(QWidget):
 
@@ -34,6 +34,7 @@ class RenderArea(QWidget):
 
     points = []
 
+    redlines = []
     primitives = {'points' : [],
                       'polyline' : [],
                       'polygon' : []
@@ -64,7 +65,7 @@ class RenderArea(QWidget):
         self.setMouseTracking(True)
 
     def minimumSizeHint(self):
-        return QSize(400, 400)
+        return QSize(600, 600)
 
     #draw window size
     def sizeHint(self):
@@ -94,6 +95,18 @@ class RenderArea(QWidget):
 
             painter.save()
 
+            #TODO CHANGE COLOR
+            p = QPen()
+            p.setColor('red')
+            p.setWidth(3)
+            painter.setPen(p)
+            if self.redlines != []:
+                # painter.setPen(self.palette().light().color())
+                for l in self.redlines:
+                    painter.drawLine(QLine(*l[0], *l[1]))
+
+            painter.restore()
+
             if self.primitives['points'] != []:
                 for p in self.primitives['points']:
                     drawP(QPoint(*p))
@@ -104,7 +117,7 @@ class RenderArea(QWidget):
             if self.primitives['polygon'] != []:
                 painter.drawPolygon([QPoint(*p) for p in self.primitives['polygon']])
 
-            painter.restore()
+
 
             painter.setPen(self.palette().dark().color())
             painter.setBrush(Qt.NoBrush)
@@ -123,6 +136,9 @@ class Window(QWidget):
         self.render_area.pass_program_logic_instance(self.program_logic)
         self.program_logic.pass_render_area_instance(self.render_area)
 
+        self.program_logic.polyline = poly1
+        # self.program_logic.polyline = [(116, 206), (191, 75), (311, 149), (219, 344), (140, 359), (247, 227)]
+        # self.program_logic.stage = 1
 
         main_layout = QGridLayout()
         main_layout.setColumnStretch(0, 1)

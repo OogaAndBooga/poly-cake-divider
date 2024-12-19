@@ -8,7 +8,7 @@ class Program_Logic():
     origin = None #one of the defining points for division
     origin_is_set = False
     MOUSENEARDIST = 10
-
+    tempbowtiedata = None
     # points = []
 
     def __init__(self):
@@ -17,6 +17,8 @@ class Program_Logic():
     def pass_render_area_instance(self, r_area_instance):
         self.render_area = r_area_instance
 
+    def advance_stage(self):
+        self.stage += 1
     # def update_stage(self):
     #     self.stage += 1
 
@@ -24,7 +26,7 @@ class Program_Logic():
         must_update = (value != self.mouse_near)
         self.mouse_near = value
         if must_update:
-            self.draw()
+            self.update_screen()
 
     def mouse_move_event(self, pos):
         if self.stage == 0:
@@ -38,27 +40,33 @@ class Program_Logic():
         if self.stage == 0:
             if not self.mouse_near:
                 self.polyline.append(pos)
-                 #function to send data to be displayed
             else:
-                self.stage += 1
+                self.advance_stage()
                 self.poly = Polygon(self.polyline)
                 print(self.polyline)
-            self.draw()
+            self.update_screen()
         elif self.stage == 1:
-            if not self.origin_is_set:
+            if True:
+            # if not self.origin_is_set:
+                #TODO better way of handling origin of rays
                 print(f"ORIGIN POSITION: {pos}")
                 self.origin = pos
                 self.origin_is_set = True
-                self.draw()
 
-    def draw(self):
+                self.tempbowtiedata = self.poly.gen_bowties(self.origin)
+
+                self.update_screen()
+
+    def update_screen(self):
         primitives = {'points' : [],
                       'polyline' : [],
                       'polygon' : []
                       }
 
+        redlines = []
+
         if self.stage == 0:
-            #TODO bug if no points added and mouse near
+            #BUG if no points added and mouse near
             if len(self.polyline) == 1 or self.mouse_near:
                 primitives['points'].append(self.polyline[0])
             if len(self.polyline) > 1:
@@ -67,9 +75,12 @@ class Program_Logic():
             primitives['polygon'] = self.polyline
             if self.origin_is_set:
                 primitives['points'] += [self.origin]
+                redlines += self.tempbowtiedata
 
         print('PRIMITIVES SENT TO RENDERAREA', primitives)
+        print(f'NUMBER OF RED ELEMENTS: {len(redlines)}')
         self.render_area.primitives = primitives
+        self.render_area.redlines = redlines
         self.render_area.update()
 
             # drawP(self.origin, 5)

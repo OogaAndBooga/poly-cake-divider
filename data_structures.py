@@ -16,14 +16,15 @@ class Segment :
         r = ray.direction
 
         if not sp:
-            #TODO fix the bug(slowness)
+            #this "solution" is slow
             # r = ray.direction
             k = (abs(b) ** 2 - c @ b - (abs(a) ** 2) * (r @ b) / (a @ r)) / ((b @ r) * (a @ c) / (a @ r) - (b @ c))
             d = (abs(a) ** 2 + k * (a @ c)) / (a @ r)
             solution = {'d':float(d), 'k':float(k)}
             print(solution)
         else:
-            #TODO divide by zero potential error
+            #TODO increase speed of computations
+            #FIXME divide by zero potential error
             d, k = symbols('d, k') #d scales ray and k scales c  up to intersection point
             eq1 = Eq(d * float(a @ ray.direction) - k * (a @ c), abs(a) ** 2)
             eq2 = Eq(d * float(b @ ray.direction) - k * (b @ c), abs(b) ** 2 - c @ b)
@@ -50,6 +51,7 @@ class Ray :
         self.key = self.direction.phi #for sorting
 
     def intersect_polygon(self, poly):
+        self.intersections = []
         for seg in poly.segments:
             ray_on_segment_edge = self.poly_vertex is seg.a or self.poly_vertex is seg.b
 
@@ -89,19 +91,20 @@ class Bowtie :
         # self.remove_bad()
 
     #assuming polyline does not intersect itself, neither will the ladder rungs
+    #BUG does not work all the time
     def gen_ladder_rungs(self):
         self.rungs = []
 
         r1int = self.ray1.intersections
         r2int = self.ray2.intersections
 
-        #FIXME generate rungs
-        self.rungs = [i.segment for i in r1int]
-        # for i in range(len(r1int)):
-        #     for j in range(i + 1, len(r2int)):
-        #         if r1int[i].segment == r2int[j].segment:
-                    # self.rungs += [Segment(r1int[i].point, r2int[j].point)]
 
+        # self.rungs = [i.segment for i in r1int]
+        for i in range(len(r1int)):
+            for j in range(i + 1, len(r2int)):
+                if r1int[i].segment == r2int[j].segment:
+                    self.rungs += [Segment(r1int[i].point, r2int[j].point)]
+        #TODO sort rungs
         # self.rungs.sort(key = lambda a: a.)
 
 
