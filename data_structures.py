@@ -81,6 +81,7 @@ class Ray :
         r.direction *= 100
         r.poly_vertex = r.origin + r.direction
         return (toTuple(r.origin), toTuple(r.poly_vertex))
+
     def export(self):
         return {
             'origin': toTuple(self.origin),
@@ -98,37 +99,28 @@ class Bowtie :
         self.gen_ladder_rungs()
 
     #assuming polyline does not intersect itself, neither will the ladder rungs
-    #BUG does not work all the time
     def gen_ladder_rungs(self):
         self.rungs = []
-
         r1int = self.ray1.intersections
         r2int = self.ray2.intersections
 
-
-        # self.rungs = [i.segment for i in r1int]
-        for i in range(len(r1int)):
-            for j in range(i + 1, len(r2int)):
-                if r1int[i].segment == r2int[j].segment:
-                    self.rungs += [Segment(r1int[i].point, r2int[j].point)]
-        #TODO sort rungs
-        # self.rungs.sort(key = lambda a: a.)
-
-
-    #TODO assuming rays are properly sorted a segment intersecting
-    #only one of the rays intersects on one of the segment ends(k == 0 or k == 1)
-    #TODO DO NOT REMOVE ELEMENTS FROM RAYS, INSTANCES OF RAYS ARE SHARED ACROSS BOWTIES
-    def remove_bad(self):
-        r1seg = {int.seg for int in self.ray1.intersections}
-        r2seg = {int.seg for int in self.ray2.intersections}
+        r1seg = {i.segment for i in self.ray1.intersections}
+        r2seg = {i.segment for i in self.ray2.intersections}
 
         common_segments = r1seg & r2seg
 
-        #type(amogus) = Intersection
-        for amogus in self.ray1.intersections:
-            if amogus.seg not in common_segments:
-                del amogus
+        for cseg in common_segments:
+            for i in r1int:
+                if i.segment is cseg:
+                    int1 = i
+                    break
+            for i in r2int:
+                if i.segment is cseg:
+                    int2 = i
+                    break
 
-        for amogus in self.ray2.intersections:
-            if amogus.seg not in common_segments:
-                del amogus
+            self.rungs += [Segment(int1.point, int2.point)]
+
+
+        #TODO sort rungs
+        # self.rungs.sort(key = lambda a: a.)
