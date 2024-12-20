@@ -22,8 +22,6 @@ class Program_Logic():
 
     def advance_stage(self):
         self.stage += 1
-    # def update_stage(self):
-    #     self.stage += 1
 
     def set_mouse_near(self, value):
         must_update = (value != self.mouse_near)
@@ -41,11 +39,7 @@ class Program_Logic():
             if abs(self.btindex) >= len(self.poly.bowties):
                 self.btindex = 0
 
-            # if self.btindex < 0:
-            #     self.btindex = 0
-
             # self.tempbowtiedata = self.poly.display_ray(self.btindex)
-
             self.tempbowtiedata = self.poly.display_bowtie(self.btindex)
 
             self.update_screen()
@@ -70,8 +64,6 @@ class Program_Logic():
             self.update_screen()
         elif self.stage == 1:
             if True:
-            # if not self.origin_is_set:
-                #TODO better way of handling origin of rays
                 print(f"ORIGIN POSITION: {pos}")
                 self.origin = pos
                 self.origin_is_set = True
@@ -114,22 +106,3 @@ class Program_Logic():
         self.render_area.primitives = primitives
         self.render_area.redlines = redlines
         self.render_area.update()
-
-            # drawP(self.origin, 5)
-            # for p in self.int:
-            #     drawP(p, 6)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

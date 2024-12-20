@@ -16,13 +16,6 @@ class RenderArea(QWidget):
                       'polygon' : []
                       }
 
-    # points = QPolygon([
-    #     QPoint(40, 80),
-    #     QPoint(50, 70),
-    #     QPoint(90, 70)
-    # ])
-
-
     def __init__(self, parent=None):
         super().__init__(parent)
 
@@ -66,10 +59,8 @@ class RenderArea(QWidget):
         print(f'\nKEYPRESS EVENT: {event}')
 
         self.program.key_press_event(pressed)
-        # breakpoint()
 
     def paintEvent(self, event):
-
         # print(event,self.primitives)
 
         def drawP(pos, r = 6):

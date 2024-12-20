@@ -20,10 +20,8 @@ def seg_ray_intersection_math(segment, ray):
     solution = {'d':float(d), 'k':float(k)}
 
     global total_calculations
-    # print(total_calculations[0], solution)
-
-
     total_calculations[0] += 1
+    # print(total_calculations[0], solution)
     return solution
 
 class Segment :
@@ -35,16 +33,6 @@ class Segment :
     def ray_intersection_math(self, ray):
         solution = seg_ray_intersection_math(self, ray)
         return solution
-        #     #this "solution" is slow
-        #     d, k = symbols('d, k') #d scales ray and k scales c  up to intersection point
-        #     eq1 = Eq(d * float(a @ ray.direction) - k * (a @ c), abs(a) ** 2)
-        #     eq2 = Eq(d * float(b @ ray.direction) - k * (b @ c), abs(b) ** 2 - c @ b)
-        #
-        #     solution = solve([eq1, eq2], [d, k], particular = True, quick=True)
-        #     print(solution)
-        #     solution = {'d' : solution[d], 'k' : solution[k]}
-        #
-        # return solution
 
 class Intersection:
     def __init__(self, point, segment):
@@ -75,7 +63,6 @@ class Ray :
                 d = sol['d']
                 k = sol['k']
 
-                #TODO REMOVE d > 0 AFTER DEBUGGING
                 if 0 <= k <= 1:
                     self.intersections.append( Intersection(self.origin + self.direction * d, seg))
 
@@ -124,7 +111,6 @@ class Bowtie :
                     break
 
             self.rungs += [Segment(int1.point, int2.point)]
-
 
         #TODO sort rungs
         # self.rungs.sort(key = lambda a: a.)

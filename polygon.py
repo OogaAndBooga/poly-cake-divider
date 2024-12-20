@@ -8,7 +8,6 @@ def toTuple(vec):
 
 
 class Polygon :
-    # btindex = 0
 
     def __init__(self, points):
         self.points = points
@@ -71,23 +70,3 @@ class Polygon :
         # print(f"RED DATA LENGTH(rys):{len(rys)}")
         # print(f'BOWTIE INDEX {index}')
         return fb + rys
-
-        # for ray in self.rays:
-        #     for seg in self.segments:
-        #
-        #         ray_on_segment_edge = ray.poly_vertex is seg.a or ray.poly_vertex is seg.b
-        #
-        #         if ray_on_segment_edge:
-        #             ray.intersections.append( Intersection(ray.poly_vertex, seg))
-        #         else:
-        #             sol = seg.ray_intersection(ray)
-        #             d = sol['d']
-        #             k = sol['k']
-        #
-        #             if not_in_seg and d > 0 and 0 <= k <= 1:
-        #                 ray.intersections.append( Intersection(ray.origin + ray.direction * d, seg))
-
-
-
-        # for i in range(len(self.rays) - 1):
-        #     self.bowties.append(Bowtie(self.rays[i], self.rays[i+1]))
