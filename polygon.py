@@ -9,6 +9,7 @@ def toTuple(vec):
 
 class Polygon :
     bowties = []
+    rays = []
     def __init__(self, points):
         self.points = points
         self.vec_points = [vector.obj(x=p[0], y=p[1]) for p in self.points]
@@ -22,6 +23,7 @@ class Polygon :
 
         self.segments.append(Segment(self.vec_points[-1], self.vec_points[0]))
 
+    #TODO 2 rays have the same angle or are very close
     def gen_rays(self):
         self.rays = []
         for vertex in self.vec_points:
@@ -56,18 +58,3 @@ class Polygon :
         rl = [ray.gen_line_tuple()]
 
         return fb + rl
-
-    # def display_bowtie(self, index):
-
-        # bt = self.bowties[index]
-        # fb = bt.rungs
-        #
-        #
-        # fb = [(toTuple(seg.a), toTuple(seg.b)) for seg in fb]
-        #
-        # rys = [bt.ray1.gen_line_tuple(), bt.ray2.gen_line_tuple()]
-        #
-        # # print(f"FB, RED DATA:{fb}")
-        # # print(f"RED DATA LENGTH(rys):{len(rys)}")
-        # # print(f'BOWTIE INDEX {index}')
-        # return fb + rys

@@ -7,6 +7,8 @@ total_calculations = [0]
 def toTuple(vec):
     return (vec.x, vec.y)
 
+
+#TODO case in which segment is parallel to ray
 def seg_ray_intersection_math(segment, ray):
     a = segment.a - ray.origin
     b = segment.b - ray.origin
@@ -35,15 +37,38 @@ class Segment :
         solution = seg_ray_intersection_math(self, ray)
         return solution
 
+    def generator(self):
+        yield self.a
+        yield self.b
+
+    def __iter__(self):
+        return self.generator()
+
+    #not a full implementation of & operator
+    #2 identical segments will not return a iterable with both points
+    def __and__(self, other):
+        # breakpoint()
+        if not (self.a in other or self.b in other or other.a in self or other.b in self):
+            return None
+        else:
+            if self.a in other:
+                return self.a
+            if self.b in other:
+                return self.b
+            if other.a in self:
+                return other.a
+            if other.b in self:
+                return other.b
+
 class Intersection:
-    def __init__(self, point, segment, origin = None):
+    def __init__(self, point, segment, section : bool):
         self.point = point
         self.segment = segment
-        if origin is not None:
-            self.origin = origin
+        self.section = section
 
 class Ray :
     intersections = []
+    flipped = False
     def __init__(self, origin, poly_vertex):
         self.origin = origin
         self.direction = poly_vertex - origin # vector with ray direction
@@ -52,22 +77,30 @@ class Ray :
         self.sorting_angle = self.direction.phi
         if self.sorting_angle < 0:
             self.sorting_angle += pi
+            self.flipped = True
 
-
+    #TODO create self.intersections_opposite for clearer code?
     def intersect_polygon(self, poly):
         self.intersections = []
         for seg in poly.segments:
-            ray_on_segment_edge = self.poly_vertex is seg.a or self.poly_vertex is seg.b
+            ray_on_segment_edge = self.poly_vertex in seg
 
             if ray_on_segment_edge:
-                self.intersections += [Intersection(self.poly_vertex, seg)]
+                self.intersections += [Intersection(self.poly_vertex, seg, not self.flipped)]
             else:
                 sol = seg.ray_intersection_math(self)
                 d = sol['d']
                 k = sol['k']
 
+                dpos = (d >= 0)
+                if not self.flipped:
+                    section = dpos
+                else:
+                    section = not dpos
                 if 0 <= k <= 1:
-                    self.intersections.append( Intersection(self.origin + self.direction * d, seg, self.origin))
+                    self.intersections.append(
+                        Intersection(self.origin + self.direction * d, seg, section)
+                    )
 
     def gen_line_tuple(self):
         r = copy.deepcopy(self)
@@ -76,15 +109,16 @@ class Ray :
         r.origin  = r.origin - r.direction
         return (toTuple(r.origin), toTuple(r.poly_vertex))
 
-    def export(self):
-        return {
-            'origin': toTuple(self.origin),
-            'direction' : toTuple(self.direction),
-            'intersections' : [toTuple(i.point) for i in self.intersections]
-        }
+    # def export(self):
+    #     return {
+    #         'origin': toTuple(self.origin),
+    #         'direction' : toTuple(self.direction),
+    #         'intersections' : [toTuple(i.point) for i in self.intersections]
+    #     }
 
 class Rung:
     def __init__(self, origin, a, b):
+        self.segment = Segment(a, b)
         self.ray1 = Ray(origin, a)
         self.ray2 = Ray(origin, b)
         self.origin = origin
@@ -96,7 +130,7 @@ class Rung:
         yield self.ray2.poly_vertex
 
     def __iter__(self):
-        return self.generator
+        return self.generator()
 
 
 class Quadrilateral:
@@ -105,12 +139,15 @@ class Quadrilateral:
         self.rung2 = rung2
         self.tup = [toTuple(p) for p in[rung1.a, rung1.b, rung2.b, rung2.a]]
 
+#TODO store data for future calculations
 class Triangle:
     def __init__(self, rung1, rung2):
-        self.rung
+        comp = rung1.segment & rung2.segment
+        points = [*rung1.segment] + [*rung2.segment]
+        self.tup = [toTuple(comp)] + [toTuple(p) for p in points if p is not comp]
+        print(self.tup)
 
 class Bowtie :
-    # self.rungs = None
     def __init__(self, origin, ray1, ray2):
         self.origin = origin
         self.ray1 = ray1
@@ -122,6 +159,8 @@ class Bowtie :
     #assuming polyline does not intersect itself, neither will the ladder rungs
     def gen_ladder_rungs(self):
         self.rungs = []
+        self.rungs_opposite = []
+
         r1int = self.ray1.intersections
         r2int = self.ray2.intersections
 
@@ -140,22 +179,48 @@ class Bowtie :
                     int2 = i
                     break
 
-            self.rungs += [Rung(self.origin, int1.point, int2.point)]
-
-        #compare 2 rungs to see which is closer to origin
-        def compare_seg(rung1, rung2):
-            if rung1.ray1.poly_vertex is rung2.ray1.poly_vertex:
-                return abs(rung1.ray2.direction) > abs(rung2.ray2.direction)
+            if int1.section :
+                self.rungs += [Rung(self.origin, int1.point, int2.point)]
             else:
-                return abs(rung1.ray1.direction) > abs(rung2.ray1.direction)
-                # pass
+                self.rungs_opposite += [Rung(self.origin, int1.point, int2.point)]
 
-        self.rungs = sorted(self.rungs, key = cmp_to_key(compare_seg), reverse = True)
-        #TODO verify that rungs are sorted
+        #compare function for 2 rungs on distance to origin
+        def compare_seg_origin_distance(rung1, rung2):
+            if rung1 is rung2:
+                return 0
+            l = lambda b: int(b) * 2 - 1
+            if rung1.ray1.poly_vertex is rung2.ray1.poly_vertex:
+                return l(abs(rung1.ray2.direction) > abs(rung2.ray2.direction))
+            elif rung1.ray2.poly_vertex is rung2.ray2.poly_vertex:
+                return l(abs(rung1.ray1.direction) > abs(rung2.ray1.direction))
+            else:
+                return l(abs(rung1.ray1.direction) > abs(rung2.ray1.direction))
 
-    #TODO triangle shapes, origin shape, points not outside of polygon
+        self.rungs.sort(key = cmp_to_key(compare_seg_origin_distance))
+        self.rungs_opposite.sort(key = cmp_to_key(compare_seg_origin_distance))
+        #TODO verify that rungs are sorted + sort order
+
+    def shape_from_rungs(self, rung1, rung2):
+        common = rung1.segment & rung2.segment
+        if common is None:
+            return Quadrilateral(rung1, rung2)
+        else:
+            return Triangle(rung1, rung2)
+
+    #TODO implement for origin inside of polygon
+    #TODO implement for origin on polygon
+    #TODO implement triangle containing origin
     def gen_shapes(self):
         self.shapes = []
-        for i in range(0,len(self.rungs), 2):
-            self.shapes += [Quadrilateral(self.rungs[i], self.rungs[i+1])]
+        self.shapes_opposite = []
 
+        def gen_shapes(rungs, shapes):
+            if len(rungs) < 2:
+                return
+            for i in range(1, len(rungs), 2):
+                rung1 = rungs[i]
+                rung2 = rungs[i-1]
+                shapes += [self.shape_from_rungs(rung1, rung2)]
+
+        gen_shapes(self.rungs, self.shapes)
+        gen_shapes(self.rungs_opposite, self.shapes_opposite)

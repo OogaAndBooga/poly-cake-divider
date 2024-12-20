@@ -7,6 +7,7 @@ def toTuple(vec):
     return (vec.x, vec.y)
 
 class Program_Logic():
+    bts = 2
     btindex = 0
     stage = 0
     polyline = [] # before creation of polygon
@@ -14,7 +15,10 @@ class Program_Logic():
     origin = None #one of the defining points for division
     origin_is_set = False
     MOUSENEARDIST = 10
-    tempbowtiedata = None
+    tempbowtiedata = []
+    tempbowtielines = []
+    tempbowtieshapes = []
+    redpoints = []
     # points = []
 
     def __init__(self):
@@ -36,20 +40,20 @@ class Program_Logic():
             self.update_screen()
 
     def key_press_event(self, key):
-        if key in ['up','down']:
-            if key == 'up':
-                self.btindex += 1
-            elif key == 'down':
-                self.btindex -= 1
+        # if key in ['up','down']:
+        if key == 'up':
+            self.btindex += 1
+        elif key == 'down':
+            self.btindex -= 1
+        # elif key == 'toggle':
+        #     self.bts += 1
+        #     self.bts %= 3
+        # print(f'BTS: {self.bts}')
 
-            if abs(self.btindex) >= len(self.poly.bowties):
-                self.btindex = 0
+        if abs(self.btindex) >= len(self.poly.bowties):
+            self.btindex = 0
 
-            # self.tempbowtiedata = self.poly.display_ray(self.btindex)
-            # self.display_bowtie()
-            # self.tempbowtiedata = self.poly.display_bowtie(self.btindex)
-
-            self.update_screen()
+        self.update_screen()
 
 
     def mouse_move_event(self, pos):
@@ -88,6 +92,27 @@ class Program_Logic():
 
                 self.update_screen()
 
+    def display_ray_data_gen(self):
+        if(len(self.poly.rays) == 0):
+            return
+
+        ray = self.poly.rays[self.btindex]
+
+        # l = lambda a:a.segment
+        if self.bts == 0:
+            points = [toTuple(i.point) for i in ray.intersections if i.section]
+        elif self.bts == 1:
+            points = [toTuple(i.point) for i in ray.intersections if not i.section]
+        else:
+            points = [toTuple(i.point) for i in ray.intersections]
+        # points = [toTuple(i.point) for i in ray.intersections if i.section == t]
+
+        rl = [ray.gen_line_tuple()]
+
+        # return fb + rl
+        self.tempbowtielines = rl
+        self.redpoints = points
+
     def display_bowtie_data_gen(self):
         if(len(self.poly.bowties) == 0):
             return
@@ -99,18 +124,21 @@ class Program_Logic():
 
         rys = [bt.ray1.gen_line_tuple(), bt.ray2.gen_line_tuple()]
 
+        self.redlines = fb
         self.tempbowtielines = rys
-        self.tempbowtieshapes = [s.tup for s in bt.shapes]
+        a = [s.tup for s in bt.shapes]
+        b = [s.tup for s in bt.shapes_opposite]
+        if self.bts == 0:
+            c = a
+        elif self.bts == 1:
+            c = b
+        else:
+            c = a + b
 
-        # print(f"FB, RED DATA:{fb}")
-        # print(f"RED DATA LENGTH(rys):{len(rys)}")
-        # print(f'BOWTIE INDEX {index}')
-        # return fb + rys
-
-        # self.tempbowtielines = fb + rys
-
+        self.tempbowtieshapes = c
 
     def update_screen(self):
+        # self.display_ray_data_gen()
         self.display_bowtie_data_gen()
         self.update_render_area()
         self.update_graph()
@@ -130,6 +158,7 @@ class Program_Logic():
 
         redlines = []
         redpolys = []
+        redpoints = []
 
         if self.stage == 0:
             #BUG if no points added and mouse near
@@ -143,11 +172,13 @@ class Program_Logic():
                 primitives['points'] += [self.origin]
                 redlines += self.tempbowtielines
                 redpolys = self.tempbowtieshapes
+                redpoints = self.redpoints
 
         # print('PRIMITIVES SENT TO RENDERAREA', primitives)
         # print(f'NUMBER OF BLACK PRIMITIVES {len(primitives)}')
-        print(f'NUMBER OF RED RUNGS: {len(redlines) - 2}')
+        # print(f'NUMBER OF RED RUNGS: {len(redlines) - 2}')
         self.render_area.primitives = primitives
         self.render_area.redlines = redlines
         self.render_area.redpolys = redpolys
+        self.render_area.redpoints = redpoints
         self.render_area.update()

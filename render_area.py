@@ -11,7 +11,7 @@ import sys
 
 class RenderArea(QWidget):
     points = []
-
+    keysel = 0
     redlines = []
     redpolys = []
     primitives = {'points' : [],
@@ -57,9 +57,18 @@ class RenderArea(QWidget):
             sys.exit()
         if key == Qt.Key_K:
             pressed = 'up'
+            self.keysel = 999
         if key == Qt.Key_M:
             pressed = 'down'
-        print(f'\nKEYPRESS EVENT: {event}')
+            # self.keysel = 0
+        if key == Qt.Key_T:
+            pressed = 'toggle'
+            self.keysel = 999
+        if key == Qt.Key_Z:
+            self.keysel += 1
+            self.keysel %= len(self.redpolys)
+            # print(f'KEYSEL: {self.keysel}')
+        # print(f'\nKEYPRESS EVENT: {event}\n')
 
         self.program.key_press_event(pressed)
 
@@ -77,7 +86,7 @@ class RenderArea(QWidget):
             painter.save()
 
             p = QPen()
-            p.setColor('gray')
+            p.setColor('blue')
             p.setWidth(1)
             painter.setPen(p)
             if self.redlines != []:
@@ -91,11 +100,21 @@ class RenderArea(QWidget):
             # p.setColor('red')
             painter.setBrush(b)
             # set_brush(QBrush(Qt.green, style))
-            if self.redpolys != []:
-                for poly in self.redpolys:
-                    test = [QPoint(*p) for p in poly]
-                    print(test)
+            # if self.redpolys != []:
+            i = 0
+            for poly in self.redpolys:
+                test = [QPoint(*p) for p in poly]
+                print('_', end = '')
+                if i == self.keysel:
+                    print(f'\b{i}',end='')
                     painter.drawPolygon(test)
+                if self.keysel == 999:
+                    painter.drawPolygon(test)
+                i += 1
+            print()
+
+            for p in self.redpoints:
+                drawP(QPoint(*p))
 
             painter.restore()
 
