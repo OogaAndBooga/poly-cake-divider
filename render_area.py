@@ -13,6 +13,7 @@ class RenderArea(QWidget):
     points = []
 
     redlines = []
+    redpolys = []
     primitives = {'points' : [],
                       'polyline' : [],
                       'polygon' : []
@@ -76,13 +77,25 @@ class RenderArea(QWidget):
             painter.save()
 
             p = QPen()
-            p.setColor('red')
-            p.setWidth(3)
+            p.setColor('gray')
+            p.setWidth(1)
             painter.setPen(p)
             if self.redlines != []:
                 # painter.setPen(self.palette().light().color())
                 for l in self.redlines:
                     painter.drawLine(QLine(*l[0], *l[1]))
+
+            #Qt.HorPattern
+            b = QBrush(QBrush(Qt.green, Qt.CrossPattern))
+            # CrossPattern
+            # p.setColor('red')
+            painter.setBrush(b)
+            # set_brush(QBrush(Qt.green, style))
+            if self.redpolys != []:
+                for poly in self.redpolys:
+                    test = [QPoint(*p) for p in poly]
+                    print(test)
+                    painter.drawPolygon(test)
 
             painter.restore()
 

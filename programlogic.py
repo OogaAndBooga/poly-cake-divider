@@ -46,7 +46,7 @@ class Program_Logic():
                 self.btindex = 0
 
             # self.tempbowtiedata = self.poly.display_ray(self.btindex)
-            self.display_bowtie()
+            # self.display_bowtie()
             # self.tempbowtiedata = self.poly.display_bowtie(self.btindex)
 
             self.update_screen()
@@ -83,30 +83,35 @@ class Program_Logic():
                 print(f'CALCULATED {total_calculations[0]} INTERSECTIONS IN {round(t2-t1,2)} seconds')
 
                 # self.tempbowtiedata = self.poly.display_ray(self.btindex)
-                self.display_bowtie()
+                # self.display_bowtie()
                 # self.tempbowtiedata = self.poly.display_bowtie(self.btindex)
 
                 self.update_screen()
 
-    def display_bowtie(self, index = None):
-        if index is None:
-            index = self.btindex
+    def display_bowtie_data_gen(self):
+        if(len(self.poly.bowties) == 0):
+            return
 
-        bt = self.poly.bowties[index]
+        bt = self.poly.bowties[self.btindex]
+
         fb = bt.rungs
-
-
         fb = [(toTuple(seg.a), toTuple(seg.b)) for seg in fb]
 
         rys = [bt.ray1.gen_line_tuple(), bt.ray2.gen_line_tuple()]
+
+        self.tempbowtielines = rys
+        self.tempbowtieshapes = [s.tup for s in bt.shapes]
 
         # print(f"FB, RED DATA:{fb}")
         # print(f"RED DATA LENGTH(rys):{len(rys)}")
         # print(f'BOWTIE INDEX {index}')
         # return fb + rys
-        self.tempbowtiedata = fb + rys
+
+        # self.tempbowtielines = fb + rys
+
 
     def update_screen(self):
+        self.display_bowtie_data_gen()
         self.update_render_area()
         self.update_graph()
 
@@ -124,6 +129,7 @@ class Program_Logic():
                       }
 
         redlines = []
+        redpolys = []
 
         if self.stage == 0:
             #BUG if no points added and mouse near
@@ -135,11 +141,13 @@ class Program_Logic():
             primitives['polygon'] = self.polyline
             if self.origin_is_set:
                 primitives['points'] += [self.origin]
-                redlines += self.tempbowtiedata
+                redlines += self.tempbowtielines
+                redpolys = self.tempbowtieshapes
 
         # print('PRIMITIVES SENT TO RENDERAREA', primitives)
         # print(f'NUMBER OF BLACK PRIMITIVES {len(primitives)}')
         print(f'NUMBER OF RED RUNGS: {len(redlines) - 2}')
         self.render_area.primitives = primitives
         self.render_area.redlines = redlines
+        self.render_area.redpolys = redpolys
         self.render_area.update()

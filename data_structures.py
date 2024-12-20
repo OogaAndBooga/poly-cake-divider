@@ -90,13 +90,24 @@ class Rung:
         self.origin = origin
         self.a = a
         self.b = b
-    #a, b and __iter__ are for backwards compatibility
+    #a, b and __iter__ are for backwards compatibility, with 1 use case in Quadrilateral
     def generator(self):
         yield self.ray1.poly_vertex
         yield self.ray2.poly_vertex
 
     def __iter__(self):
         return self.generator
+
+
+class Quadrilateral:
+    def __init__(self, rung1, rung2):
+        self.rung1 = rung1
+        self.rung2 = rung2
+        self.tup = [toTuple(p) for p in[rung1.a, rung1.b, rung2.b, rung2.a]]
+
+class Triangle:
+    def __init__(self, rung1, rung2):
+        self.rung
 
 class Bowtie :
     # self.rungs = None
@@ -106,6 +117,7 @@ class Bowtie :
         self.ray2 = ray2
 
         self.gen_ladder_rungs()
+        self.gen_shapes()
 
     #assuming polyline does not intersect itself, neither will the ladder rungs
     def gen_ladder_rungs(self):
@@ -138,8 +150,12 @@ class Bowtie :
                 return abs(rung1.ray1.direction) > abs(rung2.ray1.direction)
                 # pass
 
-        self.rungs = sorted(self.rungs, key = cmp_to_key(compare_seg))
+        self.rungs = sorted(self.rungs, key = cmp_to_key(compare_seg), reverse = True)
+        #TODO verify that rungs are sorted
 
-        # self
-        #TODO sort rungs
-        # self.rungs.sort(key = lambda a: a.)
+    #TODO triangle shapes, origin shape, points not outside of polygon
+    def gen_shapes(self):
+        self.shapes = []
+        for i in range(0,len(self.rungs), 2):
+            self.shapes += [Quadrilateral(self.rungs[i], self.rungs[i+1])]
+
