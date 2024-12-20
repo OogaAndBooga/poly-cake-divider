@@ -82,8 +82,9 @@ class Program_Logic():
                 # self.tempbowtiedata = self.poly.display_ray(self.btindex)
                 self.tempbowtiedata = self.poly.display_bowtie(self.btindex)
 
-                l = [i for i in range(self.count)]
-                self.plot_widget.p.setData(l,l)
+                l1 = [i for i in range(len(self.poly.bowties))]
+                l2 = [len(bt.rungs) for bt in self.poly.bowties]
+                self.plot_widget.p.setData(l1,l2)
                 self.count += 1
 
                 self.plot_widget.update()
