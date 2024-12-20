@@ -1,5 +1,6 @@
 import copy
 from math import pi
+from functools import cmp_to_key
 
 total_calculations = [0]
 
@@ -35,9 +36,11 @@ class Segment :
         return solution
 
 class Intersection:
-    def __init__(self, point, segment):
+    def __init__(self, point, segment, origin = None):
         self.point = point
         self.segment = segment
+        if origin is not None:
+            self.origin = origin
 
 class Ray :
     intersections = []
@@ -64,7 +67,7 @@ class Ray :
                 k = sol['k']
 
                 if 0 <= k <= 1:
-                    self.intersections.append( Intersection(self.origin + self.direction * d, seg))
+                    self.intersections.append( Intersection(self.origin + self.direction * d, seg, self.origin))
 
     def gen_line_tuple(self):
         r = copy.deepcopy(self)
@@ -79,6 +82,21 @@ class Ray :
             'direction' : toTuple(self.direction),
             'intersections' : [toTuple(i.point) for i in self.intersections]
         }
+
+class Rung:
+    def __init__(self, origin, a, b):
+        self.ray1 = Ray(origin, a)
+        self.ray2 = Ray(origin, b)
+        self.origin = origin
+        self.a = a
+        self.b = b
+    #a, b and __iter__ are for backwards compatibility
+    def generator(self):
+        yield self.ray1.poly_vertex
+        yield self.ray2.poly_vertex
+
+    def __iter__(self):
+        return self.generator
 
 class Bowtie :
     # self.rungs = None
@@ -110,7 +128,18 @@ class Bowtie :
                     int2 = i
                     break
 
-            self.rungs += [Segment(int1.point, int2.point)]
+            self.rungs += [Rung(self.origin, int1.point, int2.point)]
 
+        #compare 2 rungs to see which is closer to origin
+        def compare_seg(rung1, rung2):
+            if rung1.ray1.poly_vertex is rung2.ray1.poly_vertex:
+                return abs(rung1.ray2.direction) > abs(rung2.ray2.direction)
+            else:
+                return abs(rung1.ray1.direction) > abs(rung2.ray1.direction)
+                # pass
+
+        self.rungs = sorted(self.rungs, key = cmp_to_key(compare_seg))
+
+        # self
         #TODO sort rungs
         # self.rungs.sort(key = lambda a: a.)
