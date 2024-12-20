@@ -3,6 +3,9 @@ from polygon import Polygon
 from data_structures import total_calculations
 import time
 
+def toTuple(vec):
+    return (vec.x, vec.y)
+
 class Program_Logic():
     btindex = 0
     stage = 0
@@ -43,7 +46,8 @@ class Program_Logic():
                 self.btindex = 0
 
             # self.tempbowtiedata = self.poly.display_ray(self.btindex)
-            self.tempbowtiedata = self.poly.display_bowtie(self.btindex)
+            self.display_bowtie()
+            # self.tempbowtiedata = self.poly.display_bowtie(self.btindex)
 
             self.update_screen()
 
@@ -79,9 +83,28 @@ class Program_Logic():
                 print(f'CALCULATED {total_calculations[0]} INTERSECTIONS IN {round(t2-t1,2)} seconds')
 
                 # self.tempbowtiedata = self.poly.display_ray(self.btindex)
-                self.tempbowtiedata = self.poly.display_bowtie(self.btindex)
+                self.display_bowtie()
+                # self.tempbowtiedata = self.poly.display_bowtie(self.btindex)
 
                 self.update_screen()
+
+    def display_bowtie(self, index = None):
+        if index is None:
+            index = self.btindex
+
+        bt = self.poly.bowties[index]
+        fb = bt.rungs
+
+
+        fb = [(toTuple(seg.a), toTuple(seg.b)) for seg in fb]
+
+        rys = [bt.ray1.gen_line_tuple(), bt.ray2.gen_line_tuple()]
+
+        # print(f"FB, RED DATA:{fb}")
+        # print(f"RED DATA LENGTH(rys):{len(rys)}")
+        # print(f'BOWTIE INDEX {index}')
+        # return fb + rys
+        self.tempbowtiedata = fb + rys
 
     def update_screen(self):
         self.update_render_area()

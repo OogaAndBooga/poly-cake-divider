@@ -57,17 +57,17 @@ class Polygon :
 
         return fb + rl
 
-    def display_bowtie(self, index):
+    # def display_bowtie(self, index):
 
-        bt = self.bowties[index]
-        fb = bt.rungs
-
-
-        fb = [(toTuple(seg.a), toTuple(seg.b)) for seg in fb]
-
-        rys = [bt.ray1.gen_line_tuple(), bt.ray2.gen_line_tuple()]
-
-        # print(f"FB, RED DATA:{fb}")
-        # print(f"RED DATA LENGTH(rys):{len(rys)}")
-        # print(f'BOWTIE INDEX {index}')
-        return fb + rys
+        # bt = self.bowties[index]
+        # fb = bt.rungs
+        #
+        #
+        # fb = [(toTuple(seg.a), toTuple(seg.b)) for seg in fb]
+        #
+        # rys = [bt.ray1.gen_line_tuple(), bt.ray2.gen_line_tuple()]
+        #
+        # # print(f"FB, RED DATA:{fb}")
+        # # print(f"RED DATA LENGTH(rys):{len(rys)}")
+        # # print(f'BOWTIE INDEX {index}')
+        # return fb + rys
