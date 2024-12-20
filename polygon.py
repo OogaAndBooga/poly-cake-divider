@@ -8,7 +8,7 @@ def toTuple(vec):
 
 
 class Polygon :
-
+    bowties = []
     def __init__(self, points):
         self.points = points
         self.vec_points = [vector.obj(x=p[0], y=p[1]) for p in self.points]
