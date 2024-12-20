@@ -40,6 +40,7 @@ class Polygon :
         self.set_origin(origin)
         self.gen_rays()
 
+        #BUG when point outside of polygon, a bowtie containint the wholee polygon is generated
         self.bowties = []
         for i in range(len(self.rays) - 1):
             self.bowties.append(Bowtie(self.origin, self.rays[i], self.rays[i+1]))
