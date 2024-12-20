@@ -4,6 +4,7 @@ from data_structures import total_calculations
 import time
 
 class Program_Logic():
+    count = 0
     btindex = 0
     stage = 0
     polyline = [] # before creation of polygon
@@ -19,6 +20,9 @@ class Program_Logic():
 
     def pass_render_area_instance(self, r_area_instance):
         self.render_area = r_area_instance
+
+    def pass_plot_widget_instance(self, plot_widget):
+        self.plot_widget = plot_widget
 
     def advance_stage(self):
         self.stage += 1
@@ -78,6 +82,11 @@ class Program_Logic():
                 # self.tempbowtiedata = self.poly.display_ray(self.btindex)
                 self.tempbowtiedata = self.poly.display_bowtie(self.btindex)
 
+                l = [i for i in range(self.count)]
+                self.plot_widget.p.setData(l,l)
+                self.count += 1
+
+                self.plot_widget.update()
                 self.update_screen()
 
     def update_screen(self):
