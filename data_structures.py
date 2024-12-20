@@ -1,4 +1,5 @@
 import copy
+from math import pi
 
 total_calculations = [0]
 
@@ -57,8 +58,10 @@ class Ray :
         self.direction = poly_vertex - origin # vector with ray direction
         self.poly_vertex = poly_vertex
 
-        #TODO phi or rho???
-        self.key = self.direction.phi #for sorting
+        self.sorting_angle = self.direction.phi
+        if self.sorting_angle < 0:
+            self.sorting_angle += pi
+
 
     def intersect_polygon(self, poly):
         self.intersections = []
@@ -73,13 +76,14 @@ class Ray :
                 k = sol['k']
 
                 #TODO REMOVE d > 0 AFTER DEBUGGING
-                if d > 0 and 0 <= k <= 1:
+                if 0 <= k <= 1:
                     self.intersections.append( Intersection(self.origin + self.direction * d, seg))
 
     def gen_line_tuple(self):
         r = copy.deepcopy(self)
         r.direction *= 100
         r.poly_vertex = r.origin + r.direction
+        r.origin  = r.origin - r.direction
         return (toTuple(r.origin), toTuple(r.poly_vertex))
 
     def export(self):

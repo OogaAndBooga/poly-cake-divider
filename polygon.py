@@ -31,7 +31,7 @@ class Polygon :
 
             self.rays.append(ray)
 
-        self.rays.sort(key=lambda a: a.key)
+        self.rays.sort(key=lambda a: a.sorting_angle)
 
     #tuple for input
     def set_origin(self, origin):
