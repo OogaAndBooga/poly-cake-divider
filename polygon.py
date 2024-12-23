@@ -42,12 +42,13 @@ class Polygon :
         self.set_origin(origin)
         self.gen_rays()
 
-        #BUG when point outside of polygon, a bowtie containint the wholee polygon is generated
-        self.bowties = []
+        temp_bowties = []
         for i in range(len(self.rays) - 1):
-            self.bowties.append(Bowtie(self.origin, self.rays[i], self.rays[i+1]))
-        self.bowties.append(Bowtie(self.origin, self.rays[-1], self.rays[0]))
+            temp_bowties.append(Bowtie(self.origin, self.rays[i], self.rays[i+1]))
+        temp_bowties.append(Bowtie(self.origin, self.rays[-1], self.rays[0]))
 
+        #removes bowtie that contains the whole polygon
+        self.bowties = [bt for bt in temp_bowties if not bt.is_empty]
 
     def display_ray(self, index):
         ray = self.rays[index]

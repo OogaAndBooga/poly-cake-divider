@@ -145,7 +145,7 @@ class Program_Logic():
 
     def update_graph(self):
         l1 = [i for i in range(len(self.poly.bowties))]
-        l2 = [len(bt.rungs) for bt in self.poly.bowties]
+        l2 = [len(bt.rungs + bt.rungs_opposite) for bt in self.poly.bowties]
         self.plot_widget.p.setData(l1,l2)
 
         self.plot_widget.update()

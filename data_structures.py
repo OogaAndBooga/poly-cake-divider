@@ -178,6 +178,8 @@ class Bowtie :
         self.gen_shapes()
         self.gen_areas()
 
+        self.is_empty = (len(self.rungs + self.rungs_opposite) == 0)
+
     #assuming polyline does not intersect itself, neither will the ladder rungs
     def gen_ladder_rungs(self):
         self.rungs = []
