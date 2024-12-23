@@ -49,13 +49,3 @@ class Polygon :
 
         #removes bowtie that contains the whole polygon
         self.bowties = [bt for bt in temp_bowties if not bt.is_empty]
-
-    def display_ray(self, index):
-        ray = self.rays[index]
-
-        l = lambda a:a.segment
-        fb = [(toTuple(l(i).a), toTuple(l(i).b)) for i in ray.intersections]
-
-        rl = [ray.gen_line_tuple()]
-
-        return fb + rl
