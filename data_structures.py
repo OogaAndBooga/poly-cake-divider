@@ -1,6 +1,7 @@
 import copy
 from math import pi
 from functools import cmp_to_key
+from math import dist, sqrt
 
 total_calculations = [0]
 
@@ -132,26 +133,40 @@ class Rung:
     def __iter__(self):
         return self.generator()
 
+#points as tuples
+def heron_area(p1, p2, p3):
+    a = dist(p1, p2)
+    b = dist(p2, p3)
+    c = dist(p3, p1)
+    s = (a + b + c) / 2
+    return sqrt(s * (s - a) * (s - b) * (s - c))
 
 class Quadrilateral:
     def __init__(self, rung1, rung2):
         self.rung1 = rung1
         self.rung2 = rung2
         self.tup = [toTuple(p) for p in[rung1.a, rung1.b, rung2.b, rung2.a]]
+        self.area = (
+            heron_area(*[toTuple(p) for p in[*rung1, rung2.a]]) +
+            heron_area(*[toTuple(p) for p in[*rung2, rung1.b]])
+        )
 
 #TODO store data for future calculations
+#assumes rungs have 1 point in common
 class Triangle:
     def __init__(self, rung1, rung2):
         comp = rung1.segment & rung2.segment
         points = [*rung1.segment] + [*rung2.segment]
         self.tup = [toTuple(comp)] + [toTuple(p) for p in points if p is not comp]
-        print(self.tup)
+        self.area = heron_area(*self.tup)
+        # print(self.tup)
 
 class Origin_Triangle:
     def __init__(self, origin, rung):
         self.origin = origin
         self.rung = rung
         self.tup = [toTuple(p) for p in [origin, *rung]]
+        self.area = heron_area(*self.tup)
 
 class Bowtie :
     def __init__(self, origin, ray1, ray2):
@@ -161,6 +176,7 @@ class Bowtie :
 
         self.gen_ladder_rungs()
         self.gen_shapes()
+        self.gen_areas()
 
     #assuming polyline does not intersect itself, neither will the ladder rungs
     def gen_ladder_rungs(self):
@@ -185,6 +201,7 @@ class Bowtie :
                     int2 = i
                     break
 
+            #for any two rungs, r1.a and r2.a are intersected by a ray
             if int1.section :
                 self.rungs += [Rung(self.origin, int1.point, int2.point)]
             else:
@@ -233,3 +250,8 @@ class Bowtie :
 
         gen_shapes(self.rungs, self.shapes)
         gen_shapes(self.rungs_opposite, self.shapes_opposite)
+
+    def gen_areas(self):
+        self.area = sum(shape.area for shape in self.shapes)
+        self.area_opposite = sum(shape.area for shape in self.shapes_opposite)
+        self.delta_area = self.area - self.area_opposite
