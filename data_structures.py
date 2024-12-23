@@ -147,6 +147,12 @@ class Triangle:
         self.tup = [toTuple(comp)] + [toTuple(p) for p in points if p is not comp]
         print(self.tup)
 
+class Origin_Triangle:
+    def __init__(self, origin, rung):
+        self.origin = origin
+        self.rung = rung
+        self.tup = [toTuple(p) for p in [origin, *rung]]
+
 class Bowtie :
     def __init__(self, origin, ray1, ray2):
         self.origin = origin
@@ -207,20 +213,23 @@ class Bowtie :
         else:
             return Triangle(rung1, rung2)
 
-    #TODO implement for origin inside of polygon
     #TODO implement for origin on polygon
-    #TODO implement triangle containing origin
     def gen_shapes(self):
         self.shapes = []
         self.shapes_opposite = []
 
         def gen_shapes(rungs, shapes):
-            if len(rungs) < 2:
-                return
-            for i in range(1, len(rungs), 2):
-                rung1 = rungs[i]
-                rung2 = rungs[i-1]
-                shapes += [self.shape_from_rungs(rung1, rung2)]
+            if len(rungs) % 2 == 1: #origin inside polygon
+                self.shapes += [Origin_Triangle(self.origin, rungs[0])]
+                for rung1, rung2 in zip(rungs[1::2], rungs[2::2]):
+                    shapes += [self.shape_from_rungs(rung1, rung2)]
+            else: #origin outside polygon
+                if len(rungs) < 2:
+                    return
+                for i in range(1, len(rungs), 2):
+                    rung1 = rungs[i]
+                    rung2 = rungs[i-1]
+                    shapes += [self.shape_from_rungs(rung1, rung2)]
 
         gen_shapes(self.rungs, self.shapes)
         gen_shapes(self.rungs_opposite, self.shapes_opposite)
