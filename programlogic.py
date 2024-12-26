@@ -54,6 +54,7 @@ class Program_Logic():
 
         print(f'Bowtie Index: {self.btindex}/{len(self.poly.bowties) - 1}')
 
+        self.plot_widget.set_btindex(self.btindex)
         self.update_screen()
 
 
