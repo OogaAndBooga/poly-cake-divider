@@ -3,6 +3,8 @@ from math import pi
 from functools import cmp_to_key
 from math import dist, sqrt
 
+#TODO use same naming convention as Bowtie.area ...
+
 total_calculations = [0]
 
 def toTuple(vec):
@@ -254,6 +256,7 @@ class Bowtie :
         gen_shapes(self.rungs_opposite, self.shapes_opposite)
 
     def gen_areas(self):
-        self.area = sum(shape.area for shape in self.shapes)
-        self.area_opposite = sum(shape.area for shape in self.shapes_opposite)
-        self.delta_area = self.area - self.area_opposite
+        self.positive_area = sum(shape.area for shape in self.shapes)
+        self.negative_area = sum(shape.area for shape in self.shapes_opposite)
+        self.delta_area = self.positive_area - self.negative_area
+        self.total_area = self.positive_area + self.negative_area
