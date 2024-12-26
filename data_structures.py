@@ -170,6 +170,32 @@ class Origin_Triangle:
         self.tup = [toTuple(p) for p in [origin, *rung]]
         self.area = heron_area(*self.tup)
 
+class Slice():
+    opposite = None
+    next = None
+    previous = None
+
+    def __init__(self, origin, ray1, ray2, shapes, area):
+        self.origin = origin
+        self.ray1 = ray1
+        self.ray2 = ray2
+        self.shapes = shapes
+        self.area = area
+
+    def set_opposites(self, other):
+        self.opposite = other
+        other.opposite = self
+
+    def link_elements(first, second):
+        first.next = second
+        second.previous = first
+
+    def get_next(self):
+        return self.next
+
+    def get_previous(self):
+        return self.previous
+
 class Bowtie :
     def __init__(self, origin, ray1, ray2):
         self.origin = origin
@@ -179,6 +205,7 @@ class Bowtie :
         self.gen_ladder_rungs()
         self.gen_shapes()
         self.gen_areas()
+        self.gen_slices()
 
         self.is_empty = (len(self.rungs + self.rungs_opposite) == 0)
 
@@ -260,3 +287,12 @@ class Bowtie :
         self.negative_area = sum(shape.area for shape in self.shapes_opposite)
         self.delta_area = self.positive_area - self.negative_area
         self.total_area = self.positive_area + self.negative_area
+
+    def gen_slices(self):
+        self.positive_slice = Slice(self.origin, self.ray1, self.ray2, self.shapes, self.positive_area)
+        self.negative_slice = Slice(self.origin, self.ray1, self.ray2, self.shapes_opposite, self.negative_area)
+        self.positive_slice.set_opposites(self.negative_slice)
+
+    def link_bowties(first, second):
+        Slice.link_elements(first.positive_slice, second.positive_slice)
+        Slice.link_elements(first.negative_slice, second.negative_slice)

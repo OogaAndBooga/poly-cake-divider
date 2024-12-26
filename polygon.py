@@ -18,7 +18,6 @@ class Polygon :
         print('POLY INIT '+30*'-')
         print(self.vec_points)
 
-
     def gen_segments(self):
         self.segments = []
         for i in range(len(self.vec_points) - 1):
@@ -54,6 +53,10 @@ class Polygon :
 
         if empty_bowtie_list == []:
             self.bowties = temp_bowties
+            for bts in zip(self.bowties, self.bowties[1:]):
+                Bowtie.link_bowties(bts[0], bts[1])
+            Bowtie.link_bowties(self.bowties[-1], self.bowties[0])
+
         else:
             empty_bowtie = empty_bowtie_list[0]
             empty_bowtie_index = temp_bowties.index(empty_bowtie)
@@ -61,7 +64,18 @@ class Polygon :
             i = empty_bowtie_index
             # self.bowties[0] and self.bowties[-1] are on opposide sides of polygon
             self.bowties = temp_bowties[i:] + temp_bowties[0:i]
-            
-        # previous code
-        # removes bowtie that contains the whole polygon
-        # self.bowties = [bt for bt in temp_bowties if not bt.is_empty]
+
+            for bts in zip(self.bowties, self.bowties[1:]):
+                Bowtie.link_bowties(bts[0], bts[1])
+
+    def divide_with_slice(self, slice):
+        positive_area = 0
+        negative_area = 0
+        start_slice = slice
+        end_slice = slice.opposite
+        while slice is not end_slice:
+            positive_area += slice.area
+            negative_area += slice.opposite.area
+            slice = slice.next
+
+        return [positive_area, negative_area]
