@@ -13,10 +13,13 @@ class Polygon :
     def __init__(self, points):
         self.points = points
         self.vec_points = [vector.obj(x=p[0], y=p[1]) for p in self.points]
+        self.gen_segments()
 
         print('POLY INIT '+30*'-')
         print(self.vec_points)
 
+
+    def gen_segments(self):
         self.segments = []
         for i in range(len(self.vec_points) - 1):
             self.segments.append(Segment(*self.vec_points[i:i+2]))
