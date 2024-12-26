@@ -50,5 +50,18 @@ class Polygon :
             temp_bowties.append(Bowtie(self.origin, self.rays[i], self.rays[i+1]))
         temp_bowties.append(Bowtie(self.origin, self.rays[-1], self.rays[0]))
 
-        #removes bowtie that contains the whole polygon
-        self.bowties = [bt for bt in temp_bowties if not bt.is_empty]
+        empty_bowtie_list = [bt for bt in temp_bowties if bt.is_empty]        
+
+        if empty_bowtie_list == []:
+            self.bowties = temp_bowties
+        else:
+            empty_bowtie = empty_bowtie_list[0]
+            empty_bowtie_index = temp_bowties.index(empty_bowtie)
+            del temp_bowties[empty_bowtie_index]
+            i = empty_bowtie_index
+            # self.bowties[0] and self.bowties[-1] are on opposide sides of polygon
+            self.bowties = temp_bowties[i:] + temp_bowties[0:i]
+            
+        # previous code
+        # removes bowtie that contains the whole polygon
+        # self.bowties = [bt for bt in temp_bowties if not bt.is_empty]
