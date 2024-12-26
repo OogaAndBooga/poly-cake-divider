@@ -48,10 +48,11 @@ class Program_Logic():
         # elif key == 'toggle':
         #     self.bts += 1
         #     self.bts %= 3
-        # print(f'BTS: {self.bts}')
 
-        if abs(self.btindex) >= len(self.poly.bowties):
-            self.btindex = 0
+        if 0 > self.btindex or self.btindex >= len(self.poly.bowties):
+            self.btindex = self.btindex % len(self.poly.bowties)
+
+        print(f'Bowtie Index: {self.btindex}/{len(self.poly.bowties) - 1}')
 
         self.update_screen()
 
@@ -78,6 +79,7 @@ class Program_Logic():
                 print(f"ORIGIN POSITION: {pos}")
                 self.origin = pos
                 self.origin_is_set = True
+                self.btindex = 0
 
                 total_calculations[0] = 0
 
