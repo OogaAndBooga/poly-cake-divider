@@ -26,9 +26,12 @@ class Window(QWidget):
         self.program_logic.pass_plot_widget_instance(self.plot_widget)
 
         #simulate user input
-        l = {1:[poly1, (236, 367)],
-             2:[poly2, (398, 375)]}#(209, 314)(398, 375)
-        n = 2
+        l = {
+            1:[poly1, (236, 367)],
+            2:[poly2, (398, 375)],#(209, 314)(398, 375)
+            4:[poly4, origin4] 
+        }
+        n = 4
         if n:
             poly = l[n][0]
             origin = l[n][1]
