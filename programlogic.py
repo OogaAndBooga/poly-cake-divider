@@ -142,9 +142,11 @@ class Program_Logic():
 
     def update_screen(self):
         # self.display_ray_data_gen()
-        self.display_bowtie_data_gen()
+        if self.stage == 1:
+            self.display_bowtie_data_gen()
+            self.update_graph()
         self.update_render_area()
-        self.update_graph()
+        
 
     def update_graph(self):
         l1 = range(len(self.poly.bowties))

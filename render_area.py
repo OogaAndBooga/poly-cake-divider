@@ -10,6 +10,7 @@ import sys
 #TODO process keyboard inputs in Window widget
 
 class RenderArea(QWidget):
+    redpoints = []
     points = []
     keysel = 0
     redlines = []
