@@ -25,6 +25,11 @@ class Polygon :
 
         self.segments.append(Segment(self.vec_points[-1], self.vec_points[0]))
 
+    def set_origin_and_calculate_divisions(self, origin):
+        self.origin = vector.obj(x = origin[0], y = origin[1])
+        self.gen_rays()
+        self.gen_bowties()
+
     #TODO 2 rays have the same angle or are very close
     def gen_rays(self):
         self.rays = []
@@ -36,13 +41,7 @@ class Polygon :
 
         self.rays.sort(key=lambda a: a.sorting_angle)
 
-    #tuple for input
-    def set_origin(self, origin):
-        self.origin = vector.obj(x = origin[0], y = origin[1])
-
-    def gen_bowties(self, origin):
-        self.set_origin(origin)
-        self.gen_rays()
+    def gen_bowties(self):
 
         temp_bowties = []
         for i in range(len(self.rays) - 1):

@@ -85,7 +85,7 @@ class Program_Logic():
                 total_calculations[0] = 0
 
                 t1 = time.time()
-                self.poly.gen_bowties(self.origin)
+                self.poly.set_origin_and_calculate_divisions(self.origin)
                 t2 = time.time()
                 print(f'CALCULATED {total_calculations[0]} INTERSECTIONS IN {round(t2-t1,2)} seconds')
 
