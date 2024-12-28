@@ -20,17 +20,16 @@ class Program_Logic():
     rayindex = 0
     sindex = 0
     dvindex = 0
-    stage = 0
+    # stage = 0
     polyline = [] # before creation of polygon
     mouse_near = False # mouse within a certain distance to polyline origin
     origin = None #one of the defining points for division
     origin_is_set = False
     MOUSENEARDIST = 10
-    tempbowtiedata = []
-    tempbowtielines = []
-    tempbowtieshapes = []
-    redpoints = []
-
+    # tempbowtiedata = []
+    # tempbowtielines = []
+    # tempbowtieshapes = []
+    # redpoints = []
     def __init__(self):
         pass
 
@@ -40,8 +39,19 @@ class Program_Logic():
     def pass_plot_widget_instance(self, plot_widget):
         self.plot_widget = plot_widget
 
+
+    # 0 = input polyline
+    # 1 = set origin
+    # 2 = cycle polygon divisions
+    stage = 0
+
     def advance_stage(self):
         self.stage += 1
+
+    def reset_to_stage(self, stage):
+        if stage == 0:
+            self.stage = 0
+            self.polyline = []
 
     def set_mouse_near(self, value):
         must_update = (value != self.mouse_near)
@@ -59,39 +69,21 @@ class Program_Logic():
             #     self.bts += 1
             #     self.bts %= 3
 
-            if 0 > self.sindex or self.sindex >= len(self.poly.slices):
-                self.sindex %= len(self.poly.slices)
-            
-            print(f'Slice Index: {self.sindex}/{len(self.poly.slices) - 1}')
-
-            # if len(self.poly.rays) == abs(self.rayindex):
-            #     self.rayindex = 0
-
-
-            # self.sindex = self.rayindex
-            # self.dvindex = self.rayindex
-
-            # if 0 > self.btindex or self.btindex >= len(self.poly.bowties):
-            #     self.btindex = self.btindex % len(self.poly.bowties)
-
-            # print(f'Bowtie Index: {self.btindex}/{len(self.poly.bowties) - 1}')
-
-
-            # self.plot_widget.set_btindex(self.btindex)
-            self.plot_widget.set_btindex(self.sindex)
+            if self.stage == 2:
+                if 0 > self.sindex or self.sindex >= len(self.poly.slices):
+                    self.sindex %= len(self.poly.slices)
+                
+                print(f'Slice Index: {self.sindex}/{len(self.poly.slices) - 1}')
+                self.plot_widget.set_btindex(self.sindex)
         else :
-            self.stage = 0
-            self.polyline = []
-            # self.poly = None
-            # self.upda
+            self.reset_to_stage(0)
         self.update_screen()
-
 
     def mouse_move_event(self, pos):
         if self.stage == 0:
             if len(self.polyline) > 2 and dist(self.polyline[0], pos) < self.MOUSENEARDIST:
                 self.set_mouse_near(True)
-            else:
+            else :
                 self.set_mouse_near(False)
 
     def click_event(self, pos):
@@ -104,21 +96,22 @@ class Program_Logic():
                 self.poly = Polygon(self.polyline)
                 print(self.polyline)
             self.update_screen()
-        elif self.stage == 1:
-            if True:
-                print(f"ORIGIN POSITION: {pos}")
-                self.origin = pos
-                self.origin_is_set = True
-                self.btindex = 0
+        # elif self.stage == 1:
+        elif self.stage in [1, 2]:
+            print(f"ORIGIN POSITION: {pos}")
+            self.origin = pos
+            self.origin_is_set = True
+            self.btindex = 0
 
-                total_calculations[0] = 0
+            total_calculations[0] = 0
 
-                t1 = time.time()
-                self.poly.set_origin_and_calculate_divisions(self.origin)
-                t2 = time.time()
-                print(f'CALCULATED {total_calculations[0]} INTERSECTIONS IN {round(t2-t1,2)} seconds')
-
-                self.update_screen()
+            t1 = time.time()
+            self.poly.set_origin_and_calculate_divisions(self.origin)
+            t2 = time.time()
+            print(f'CALCULATED {total_calculations[0]} INTERSECTIONS IN {round(t2-t1,2)} seconds')
+            if self.stage == 1:
+                self.advance_stage()
+            self.update_screen()
 
     def display_ray_data_gen(self):
         if(len(self.poly.rays) == 0):
@@ -160,7 +153,7 @@ class Program_Logic():
         self.division_ray = ray.gen_line_tuple()
 
     def update_screen(self):
-        if self.stage == 1:
+        if self.stage == 2:
             # self.display_bowtie_data_gen()
             # self.display_ray_data_gen()
             # self.gen_slice_display()
@@ -195,12 +188,17 @@ class Program_Logic():
         if self.stage == 0:
             #BUG if no points added and mouse near
             elements = Paint_Kit()
-            if len(self.polyline) == 1 or self.mouse_near:
-                elements.points.append(self.polyline[0])
-            if len(self.polyline) > 1:
-                elements.polyline = self.polyline
-            draw_packets.append(elements)
+            if self.polyline != []:
+                if len(self.polyline) == 1 or self.mouse_near:
+                    elements.points.append(self.polyline[0])
+                if len(self.polyline) > 1:
+                    elements.polylines.append(self.polyline)
+                draw_packets.append(elements)
         elif self.stage == 1:
+            elements = Paint_Kit()
+            elements.polygons.append(self.polyline)
+            draw_packets.append(elements)
+        elif self.stage == 2:
             black = Paint_Kit()
             black.polygons.append(self.polyline)
 

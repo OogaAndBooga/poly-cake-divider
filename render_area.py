@@ -9,6 +9,7 @@ import sys
 #TODO process keyboard inputs in Window widget
 
 class RenderArea(QWidget):
+    draw_packets = []
 
     def __init__(self, parent=None):
         super().__init__(parent)

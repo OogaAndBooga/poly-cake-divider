@@ -32,7 +32,7 @@ class Window(QWidget):
             3:[poly3, origin3],
             4:[poly4, origin4] 
         }
-        n = 2
+        n = 0
         if n:
             poly = l[n][0]
             origin = l[n][1]
