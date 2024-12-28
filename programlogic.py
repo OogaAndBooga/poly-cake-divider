@@ -39,7 +39,6 @@ class Program_Logic():
     def pass_plot_widget_instance(self, plot_widget):
         self.plot_widget = plot_widget
 
-
     # 0 = input polyline
     # 1 = set origin
     # 2 = cycle polygon divisions
@@ -151,6 +150,8 @@ class Program_Logic():
         self.division_shapes_1 = divshp1
         self.division_shapes_2 = divshp2
 
+        self.pink_center_shapes = [shape.tup for shape in div.slices1[0].shapes] + [s.tup for s in div.slices2[0].shapes]
+
         ray = div.ray
         self.division_ray = ray.gen_line_tuple()
 
@@ -207,17 +208,22 @@ class Program_Logic():
             green = Paint_Kit(QPen(Qt.PenStyle.NoPen), QBrush(Qt.green, Qt.CrossPattern))
             red = Paint_Kit(QPen(Qt.PenStyle.NoPen), QBrush(Qt.red, Qt.CrossPattern))
             purple = Paint_Kit(QPen('blue'))
+            pink = Paint_Kit(QPen(Qt.PenStyle.NoPen), QBrush('pink', Qt.CrossPattern))
 
             if self.origin_is_set:
                 black.points.append(self.origin)
                 green.polygons += self.division_shapes_1
                 red.polygons += self.division_shapes_2
                 purple.lines.append(self.division_ray)
+                pink.polygons += self.pink_center_shapes
 
-            draw_packets.append(black)
-            draw_packets.append(red)
-            draw_packets.append(green)
-            draw_packets.append(purple)
+            for e in [black, red, green, purple, pink]:
+                draw_packets.append(e)
+
+            # draw_packets.append(black)
+            # draw_packets.append(red)
+            # draw_packets.append(green)
+            # draw_packets.append(purple)
 
         self.render_area.draw_packets = draw_packets
         self.render_area.update()

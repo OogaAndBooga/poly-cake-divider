@@ -69,10 +69,10 @@ class Polygon :
             if slice_index + half_len < slices_len:
                 # breakpoint()
                 slices1 = self.slices[slice_index : slice_index + half_len]
-                slices2 = self.slices[:slice_index] + self.slices[slice_index + half_len:]
+                slices2 = self.slices[slice_index + half_len:] + self.slices[:slice_index]
             else:
                 #TODO check this part with pen and paper, i just tried something and it worked
-                slices1 = self.slices[:slice_index - half_len] + self.slices[slice_index:]
+                slices1 = self.slices[slice_index:] + self.slices[:slice_index - half_len]
                 slices2 = self.slices[slice_index - half_len : slice_index]
 
             self.divisions.append(Division(self.slices[slice_index].ray1, slices1, slices2))
