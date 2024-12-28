@@ -6,10 +6,11 @@ def toTuple(vec):
     return (vec.x, vec.y)
 
 class Polygon :
-    bowties = []
-    rays = []
-    slices = [] #quick fix, update_screen is called with stage = 1 before poly.set_origin_and... is called
-    divisions = [] #quick fix
+    #TODO leave uncommented for clarity?
+    # bowties = []
+    # rays = []
+    # slices = [] #quick fix, update_screen is called with stage = 1 before poly.set_origin_and... is called
+    # divisions = [] #quick fix
     def __init__(self, points):
         self.points = points
         self.vec_points = [vector.obj(x=p[0], y=p[1]) for p in self.points]
@@ -55,8 +56,8 @@ class Polygon :
 
     def calculate_area(self):
         self.area = 0
-        for bowtie in self.bowties:
-            self.area += bowtie.total_area
+        for slice in self.slices:
+            self.area += slice.area
 
     def gen_divisions(self):
         self.divisions = []

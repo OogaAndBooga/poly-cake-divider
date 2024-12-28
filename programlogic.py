@@ -109,6 +109,8 @@ class Program_Logic():
             self.poly.set_origin_and_calculate_divisions(self.origin)
             t2 = time.time()
             print(f'CALCULATED {total_calculations[0]} INTERSECTIONS IN {round(t2-t1,2)} seconds')
+            print(f'POLYGON AREA: {self.poly.area}')
+            print(f'NUMBER OF SLICES: {len(self.poly.slices)}')
             if self.stage == 1:
                 self.advance_stage()
             self.update_screen()
