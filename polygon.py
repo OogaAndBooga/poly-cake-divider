@@ -1,15 +1,15 @@
 import vector
-from sympy import Eq, symbols, solve, linsolve
 import copy
-from data_structures import Ray,Segment,Bowtie
+from data_structures import Ray,Segment,Division,Slice
 
 def toTuple(vec):
     return (vec.x, vec.y)
 
-
 class Polygon :
     bowties = []
     rays = []
+    slices = [] #quick fix, update_screen is called with stage = 1 before poly.set_origin_and... is called
+    divisions = [] #quick fix
     def __init__(self, points):
         self.points = points
         self.vec_points = [vector.obj(x=p[0], y=p[1]) for p in self.points]
@@ -28,53 +28,50 @@ class Polygon :
     def set_origin_and_calculate_divisions(self, origin):
         self.origin = vector.obj(x = origin[0], y = origin[1])
         self.gen_rays()
-        self.gen_bowties()
+        self.gen_slices()
+        self.gen_divisions()
+        self.calculate_area()
 
     #TODO 2 rays have the same angle or are very close
     def gen_rays(self):
         self.rays = []
         for vertex in self.vec_points:
             ray = Ray(self.origin, vertex)
+            ray_opposite = ray.gen_opposite()
+
             ray.intersect_polygon(self)
+            ray_opposite.intersect_polygon(self)
 
             self.rays.append(ray)
+            self.rays.append(ray_opposite)
 
-        self.rays.sort(key=lambda a: a.sorting_angle)
+        self.rays.sort(key=lambda r: r.angle)
 
-    def gen_bowties(self):
+    def gen_slices(self):
+        self.slices = []
+        for ray1, ray2 in zip(self.rays, self.rays[1:]):
+            self.slices.append(Slice(ray1, ray2))
+        self.slices.append(Slice(self.rays[-1], self.rays[0]))
 
-        temp_bowties = []
-        for i in range(len(self.rays) - 1):
-            temp_bowties.append(Bowtie(self.origin, self.rays[i], self.rays[i+1]))
-        temp_bowties.append(Bowtie(self.origin, self.rays[-1], self.rays[0]))
+    def calculate_area(self):
+        self.area = 0
+        for bowtie in self.bowties:
+            self.area += bowtie.total_area
 
-        empty_bowtie_list = [bt for bt in temp_bowties if bt.is_empty]        
+    def gen_divisions(self):
+        self.divisions = []
+        slices_len = len(self.slices)
+        half_len = slices_len // 2
+        # breakpo
+        # TODO
+        for slice_index in range(0, slices_len):
+            if slice_index + half_len < slices_len:
+                # breakpoint()
+                slices1 = self.slices[slice_index : slice_index + half_len]
+                slices2 = self.slices[:slice_index] + self.slices[slice_index + half_len:]
+            else:
+                #TODO check this part with pen and paper, i just tried something and it worked
+                slices1 = self.slices[:slice_index - half_len] + self.slices[slice_index:]
+                slices2 = self.slices[slice_index - half_len : slice_index]
 
-        if empty_bowtie_list == []:
-            self.bowties = temp_bowties
-            for bts in zip(self.bowties, self.bowties[1:]):
-                Bowtie.link_bowties(bts[0], bts[1])
-            Bowtie.link_bowties(self.bowties[-1], self.bowties[0])
-
-        else:
-            empty_bowtie = empty_bowtie_list[0]
-            empty_bowtie_index = temp_bowties.index(empty_bowtie)
-            del temp_bowties[empty_bowtie_index]
-            i = empty_bowtie_index
-            # self.bowties[0] and self.bowties[-1] are on opposide sides of polygon
-            self.bowties = temp_bowties[i:] + temp_bowties[0:i]
-
-            for bts in zip(self.bowties, self.bowties[1:]):
-                Bowtie.link_bowties(bts[0], bts[1])
-
-    def divide_with_slice(self, slice):
-        positive_area = 0
-        negative_area = 0
-        start_slice = slice
-        end_slice = slice.opposite
-        while slice is not end_slice:
-            positive_area += slice.area
-            negative_area += slice.opposite.area
-            slice = slice.next
-
-        return [positive_area, negative_area]
+            self.divisions.append(Division(self.slices[slice_index].ray1, slices1, slices2))

@@ -3,13 +3,10 @@ from math import pi
 from functools import cmp_to_key
 from math import dist, sqrt
 
-#TODO use same naming convention as Bowtie.area ...
-
 total_calculations = [0]
 
 def toTuple(vec):
     return (vec.x, vec.y)
-
 
 #TODO case in which segment is parallel to ray
 def seg_ray_intersection_math(segment, ray):
@@ -64,32 +61,47 @@ class Segment :
                 return other.b
 
 class Intersection:
-    def __init__(self, point, segment, section : bool):
+    def __init__(self, point, segment):
         self.point = point
         self.segment = segment
-        self.section = section
 
 class Ray :
     intersections = []
     flipped = False
-    def __init__(self, origin, poly_vertex):
+    def __init__(self, origin, poly_vertex = None, direction = None):
         self.origin = origin
-        self.direction = poly_vertex - origin # vector with ray direction
         self.poly_vertex = poly_vertex
+        
+        if poly_vertex is None and direction is None:
+            raise TypeError('either a direction or a poly_vertex must be provided')
+        
+        if poly_vertex is not None and direction is not None:
+            raise TypeError('do not provide both poly_vertex and direction')
+        
+        if poly_vertex:
+            self.direction = poly_vertex - origin # vector with ray direction
+        if direction:
+            self.direction = direction
+        
+        # self.sorting_angle = self.direction.phi
+        self.angle = self.direction.phi
 
-        self.sorting_angle = self.direction.phi
-        if self.sorting_angle < 0:
-            self.sorting_angle += pi
-            self.flipped = True
+    def gen_opposite(self):
+        o_ray = Ray(self.origin, direction = -self.direction)
+        return o_ray
+        
 
     #TODO create self.intersections_opposite for clearer code?
     def intersect_polygon(self, poly):
         self.intersections = []
         for seg in poly.segments:
-            ray_on_segment_edge = self.poly_vertex in seg
+            if self.poly_vertex is not None:
+                ray_on_segment_edge = self.poly_vertex in seg
+            else:
+                ray_on_segment_edge = False
 
             if ray_on_segment_edge:
-                self.intersections += [Intersection(self.poly_vertex, seg, not self.flipped)]
+                self.intersections += [Intersection(self.poly_vertex, seg)]
             else:
                 sol = seg.ray_intersection_math(self)
                 d = sol['d']
@@ -100,24 +112,26 @@ class Ray :
                     section = dpos
                 else:
                     section = not dpos
-                if 0 <= k <= 1:
+
+                if 0 <= k <= 1 and 0 < d:
                     self.intersections.append(
-                        Intersection(self.origin + self.direction * d, seg, section)
+                        Intersection(self.origin + self.direction * d, seg)
                     )
 
+    def gen_oriented_line_tuple(self):
+        r = self
+        dir = r.direction * 100
+        a = r.origin + dir
+        b = r.origin
+        # b = r.origin - dir
+        return (toTuple(a), toTuple(b))
+    
     def gen_line_tuple(self):
-        r = copy.deepcopy(self)
-        r.direction *= 100
-        r.poly_vertex = r.origin + r.direction
-        r.origin  = r.origin - r.direction
-        return (toTuple(r.origin), toTuple(r.poly_vertex))
-
-    # def export(self):
-    #     return {
-    #         'origin': toTuple(self.origin),
-    #         'direction' : toTuple(self.direction),
-    #         'intersections' : [toTuple(i.point) for i in self.intersections]
-    #     }
+        r = self
+        dir = r.direction * 100
+        a = r.origin + dir
+        b = r.origin - dir
+        return (toTuple(a), toTuple(b))
 
 class Rung:
     def __init__(self, origin, a, b):
@@ -175,44 +189,19 @@ class Slice():
     next = None
     previous = None
 
-    def __init__(self, origin, ray1, ray2, shapes, area):
-        self.origin = origin
-        self.ray1 = ray1
-        self.ray2 = ray2
-        self.shapes = shapes
-        self.area = area
-
-    def set_opposites(self, other):
-        self.opposite = other
-        other.opposite = self
-
-    def link_elements(first, second):
-        first.next = second
-        second.previous = first
-
-    def get_next(self):
-        return self.next
-
-    def get_previous(self):
-        return self.previous
-
-class Bowtie :
-    def __init__(self, origin, ray1, ray2):
-        self.origin = origin
+    def __init__(self, ray1, ray2):
+        self.origin = ray1.origin
         self.ray1 = ray1
         self.ray2 = ray2
 
-        self.gen_ladder_rungs()
+        self.gen_rungs()
+        self.origin_inside_poly = (len(self.rungs) % 2 == 1)
         self.gen_shapes()
-        self.gen_areas()
-        self.gen_slices()
+        self.is_empty = (self.shapes == [])
+        self.calculate_area()
 
-        self.is_empty = (len(self.rungs + self.rungs_opposite) == 0)
-
-    #assuming polyline does not intersect itself, neither will the ladder rungs
-    def gen_ladder_rungs(self):
+    def gen_rungs(self):
         self.rungs = []
-        self.rungs_opposite = []
 
         r1int = self.ray1.intersections
         r2int = self.ray2.intersections
@@ -232,17 +221,16 @@ class Bowtie :
                     int2 = i
                     break
 
-            #for any two rungs, r1.a and r2.a are intersected by a ray
-            if int1.section :
-                self.rungs += [Rung(self.origin, int1.point, int2.point)]
-            else:
-                self.rungs_opposite += [Rung(self.origin, int1.point, int2.point)]
+            self.rungs += [Rung(self.origin, int1.point, int2.point)]
 
-        #compare function for 2 rungs on distance to origin
         def compare_seg_origin_distance(rung1, rung2):
             if rung1 is rung2:
                 return 0
+            
+            # True -> 1
+            # False -> -1
             l = lambda b: int(b) * 2 - 1
+            
             if rung1.ray1.poly_vertex is rung2.ray1.poly_vertex:
                 return l(abs(rung1.ray2.direction) > abs(rung2.ray2.direction))
             elif rung1.ray2.poly_vertex is rung2.ray2.poly_vertex:
@@ -251,8 +239,6 @@ class Bowtie :
                 return l(abs(rung1.ray1.direction) > abs(rung2.ray1.direction))
 
         self.rungs.sort(key = cmp_to_key(compare_seg_origin_distance))
-        self.rungs_opposite.sort(key = cmp_to_key(compare_seg_origin_distance))
-        #TODO verify that rungs are sorted + sort order
 
     def shape_from_rungs(self, rung1, rung2):
         common = rung1.segment & rung2.segment
@@ -264,35 +250,31 @@ class Bowtie :
     #TODO implement for origin on polygon
     def gen_shapes(self):
         self.shapes = []
-        self.shapes_opposite = []
 
-        def gen_shapes(rungs, shapes):
-            if len(rungs) % 2 == 1: #origin inside polygon
-                self.shapes += [Origin_Triangle(self.origin, rungs[0])]
-                for rung1, rung2 in zip(rungs[1::2], rungs[2::2]):
-                    shapes += [self.shape_from_rungs(rung1, rung2)]
-            else: #origin outside polygon
-                if len(rungs) < 2:
-                    return
-                for i in range(1, len(rungs), 2):
-                    rung1 = rungs[i]
-                    rung2 = rungs[i-1]
-                    shapes += [self.shape_from_rungs(rung1, rung2)]
+        rungs = self.rungs
+        if self.origin_inside_poly:
+            self.shapes.append(Origin_Triangle(self.origin, rungs[0]))
+            for rung1, rung2 in zip(rungs[1::2], rungs[2::2]):
+                self.shapes += [self.shape_from_rungs(rung1, rung2)]
+        else:
+            for rung1, rung2 in zip(rungs[0::2], rungs[1::2]):
+                self.shapes += [self.shape_from_rungs(rung1, rung2)]
 
-        gen_shapes(self.rungs, self.shapes)
-        gen_shapes(self.rungs_opposite, self.shapes_opposite)
+    def calculate_area(self):
+        self.area = 0
+        for shape in self.shapes:
+            self.area += shape.area
 
-    def gen_areas(self):
-        self.positive_area = sum(shape.area for shape in self.shapes)
-        self.negative_area = sum(shape.area for shape in self.shapes_opposite)
-        self.delta_area = self.positive_area - self.negative_area
-        self.total_area = self.positive_area + self.negative_area
+class Division:
+    def __init__(self, ray, slices1, slices2):
+        self.ray = ray
+        self.slices1 = slices1
+        self.slices2 = slices2
 
-    def gen_slices(self):
-        self.positive_slice = Slice(self.origin, self.ray1, self.ray2, self.shapes, self.positive_area)
-        self.negative_slice = Slice(self.origin, self.ray1, self.ray2, self.shapes_opposite, self.negative_area)
-        self.positive_slice.set_opposites(self.negative_slice)
+        self.area1 = sum([slice.area for slice in slices1])
+        self.area2 = sum([slice.area for slice in slices2])
+        self.total_area = self.area1 + self.area2
 
-    def link_bowties(first, second):
-        Slice.link_elements(first.positive_slice, second.positive_slice)
-        Slice.link_elements(first.negative_slice, second.negative_slice)
+
+        self.shapes1 = [shape for slice in slices1 for shape in slice.shapes]
+        self.shapes2 = [shape for slice in slices2 for shape in slice.shapes]

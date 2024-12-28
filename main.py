@@ -3,7 +3,7 @@ from __future__ import annotations
 from PySide6.QtWidgets import (QApplication, QGridLayout,
                                QLabel, QWidget, QPushButton)
 
-from polygon import Polygon
+# from polygon import Polygon   
 from programlogic import Program_Logic
 from render_area import RenderArea
 from graph_widget import Plot_Widget
@@ -29,9 +29,10 @@ class Window(QWidget):
         l = {
             1:[poly1, (236, 367)],
             2:[poly2, (398, 375)],#(209, 314)(398, 375)
+            3:[poly3, origin3],
             4:[poly4, origin4] 
         }
-        n = 4
+        n = 2
         if n:
             poly = l[n][0]
             origin = l[n][1]
@@ -52,7 +53,6 @@ class Window(QWidget):
         self.setLayout(main_layout)
 
         self.setWindowTitle("Basic Drawing")
-
 
 if __name__ == '__main__':
 

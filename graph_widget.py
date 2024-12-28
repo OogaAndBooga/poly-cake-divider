@@ -4,15 +4,23 @@ import numpy as np
 class Plot_Widget(pg.PlotWidget):
     def __init__(self):
         super().__init__()
-        p = self.plot(symbol = 'p')
-        p.setData([1,2,3,4,5],[1,4,2,6,1])
+
+        # p = self.plot(symbol = 'p','o')
+        p1 = self.plot()
+        p2 = self.plot()
+        p3 = self.plot()
+
+        self.plot1 = p1
+        self.plot2 = p2
+        self.plot3 = p3
+
         self.linear_region = pg.LinearRegionItem([0,1])
 
         scene = self.scene()
         scene.sigMouseClicked.connect(self.clicke)
 
         plotitem = self.getPlotItem()
-        plotdataitem = p
+        plotdataitem = p1
 
         self.line = pg.InfiniteLine(0)
         self.addItem(self.line)
@@ -25,7 +33,6 @@ class Plot_Widget(pg.PlotWidget):
         # lr.setZValue(-10)
 
         # self.addItem(self.linear_region)
-        self.p = p
     def set_btindex(self, btindex):
         # self.linear_region.setRegion([self.btindex, self.btindex])
         self.line.setValue(btindex)
@@ -34,6 +41,7 @@ class Plot_Widget(pg.PlotWidget):
         print(event)
         print(event.pos())
         print(event.scenePos())
+
     #do not override this
     # def mousePressEvent(self, ev):
     #     self.clicke(ev)

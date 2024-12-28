@@ -2,13 +2,24 @@ from math import dist
 from polygon import Polygon
 from data_structures import total_calculations
 import time
+from data_structures import Segment
+
+from PySide6.QtGui import QBrush, QPen
+from PySide6.QtCore import  Qt
 
 def toTuple(vec):
+    if type(vec) == Segment:
+        return (toTuple(vec.a), toTuple(vec.b))
     return (vec.x, vec.y)
+
+#TODO detect intersection of polyline while inputing
 
 class Program_Logic():
     bts = 2
     btindex = 0
+    rayindex = 0
+    sindex = 0
+    dvindex = 0
     stage = 0
     polyline = [] # before creation of polygon
     mouse_near = False # mouse within a certain distance to polyline origin
@@ -19,7 +30,6 @@ class Program_Logic():
     tempbowtielines = []
     tempbowtieshapes = []
     redpoints = []
-    # points = []
 
     def __init__(self):
         pass
@@ -40,21 +50,40 @@ class Program_Logic():
             self.update_screen()
 
     def key_press_event(self, key):
-        # if key in ['up','down']:
-        if key == 'up':
-            self.btindex += 1
-        elif key == 'down':
-            self.btindex -= 1
-        # elif key == 'toggle':
-        #     self.bts += 1
-        #     self.bts %= 3
+        if key != 'reset':
+            if key == 'up':
+                self.sindex += 1
+            elif key == 'down':
+                self.sindex -= 1
+            # elif key == 'toggle':
+            #     self.bts += 1
+            #     self.bts %= 3
 
-        if 0 > self.btindex or self.btindex >= len(self.poly.bowties):
-            self.btindex = self.btindex % len(self.poly.bowties)
+            if 0 > self.sindex or self.sindex >= len(self.poly.slices):
+                self.sindex %= len(self.poly.slices)
+            
+            print(f'Slice Index: {self.sindex}/{len(self.poly.slices) - 1}')
 
-        print(f'Bowtie Index: {self.btindex}/{len(self.poly.bowties) - 1}')
+            # if len(self.poly.rays) == abs(self.rayindex):
+            #     self.rayindex = 0
 
-        self.plot_widget.set_btindex(self.btindex)
+
+            # self.sindex = self.rayindex
+            # self.dvindex = self.rayindex
+
+            # if 0 > self.btindex or self.btindex >= len(self.poly.bowties):
+            #     self.btindex = self.btindex % len(self.poly.bowties)
+
+            # print(f'Bowtie Index: {self.btindex}/{len(self.poly.bowties) - 1}')
+
+
+            # self.plot_widget.set_btindex(self.btindex)
+            self.plot_widget.set_btindex(self.sindex)
+        else :
+            self.stage = 0
+            self.polyline = []
+            # self.poly = None
+            # self.upda
         self.update_screen()
 
 
@@ -89,101 +118,106 @@ class Program_Logic():
                 t2 = time.time()
                 print(f'CALCULATED {total_calculations[0]} INTERSECTIONS IN {round(t2-t1,2)} seconds')
 
-                # self.tempbowtiedata = self.poly.display_ray(self.btindex)
-                # self.display_bowtie()
-                # self.tempbowtiedata = self.poly.display_bowtie(self.btindex)
-
                 self.update_screen()
 
     def display_ray_data_gen(self):
         if(len(self.poly.rays) == 0):
             return
 
-        ray = self.poly.rays[self.btindex]
+        ray = self.poly.rays[self.rayindex]
 
-        # l = lambda a:a.segment
-        if self.bts == 0:
-            points = [toTuple(i.point) for i in ray.intersections if i.section]
-        elif self.bts == 1:
-            points = [toTuple(i.point) for i in ray.intersections if not i.section]
-        else:
-            points = [toTuple(i.point) for i in ray.intersections]
-        # points = [toTuple(i.point) for i in ray.intersections if i.section == t]
+        segments = [toTuple(i.segment) for i in ray.intersections]
+        points = [toTuple(i.point) for i in ray.intersections]
 
         rl = [ray.gen_line_tuple()]
 
-        # return fb + rl
-        self.tempbowtielines = rl
+        self.tempbowtielines = rl + segments
+        print(self.tempbowtielines)
         self.redpoints = points
 
-    def display_bowtie_data_gen(self):
-        if(len(self.poly.bowties) == 0):
+    def gen_slice_display(self):
+        if self.poly.slices == []:
             return
+        sl = self.poly.slices[self.sindex]
+        lines = [toTuple(r.segment) for r in sl.rungs]
+        rays = [sl.ray1.gen_line_tuple(), sl.ray2.gen_line_tuple()]
+        shapes = [s.tup for s in sl.shapes]
 
-        bt = self.poly.bowties[self.btindex]
+        self.tempbowtielines = lines + rays
+        self.tempbowtieshapes = shapes
 
-        fb = bt.rungs
-        fb = [(toTuple(seg.a), toTuple(seg.b)) for seg in fb]
+    def display_division(self):
+        if self.poly.divisions == []:
+            return
+        div = self.poly.divisions[self.sindex]
+        divshp1 = [shape.tup for shape in div.shapes1]
+        divshp2 = [shape.tup for shape in div.shapes2]
 
-        rys = [bt.ray1.gen_line_tuple(), bt.ray2.gen_line_tuple()]
+        self.division_shapes_1 = divshp1
+        self.division_shapes_2 = divshp2
 
-        self.redlines = fb
-        self.tempbowtielines = rys
-        a = [s.tup for s in bt.shapes]
-        b = [s.tup for s in bt.shapes_opposite]
-        if self.bts == 0:
-            c = a
-        elif self.bts == 1:
-            c = b
-        else:
-            c = a + b
-
-        self.tempbowtieshapes = c
+        ray = div.ray
+        self.division_ray = ray.gen_line_tuple()
 
     def update_screen(self):
-        # self.display_ray_data_gen()
         if self.stage == 1:
-            self.display_bowtie_data_gen()
+            # self.display_bowtie_data_gen()
+            # self.display_ray_data_gen()
+            # self.gen_slice_display()
+            self.display_division()
             self.update_graph()
         self.update_render_area()
-        
 
     def update_graph(self):
-        l1 = range(len(self.poly.bowties))
-        l2 = [bt.total_area for bt in self.poly.bowties]
-        self.plot_widget.p.setData(l1,l2)
+        indexes = range(len(self.poly.slices))
 
+        a1 = [d.area1 for d in self.poly.divisions]
+        a2 = [d.area2 for d in self.poly.divisions]
+        a3 = [d.total_area for d in self.poly.divisions]
+
+        self.plot_widget.plot1.setData(indexes, a1)
+        self.plot_widget.plot2.setData(indexes, a2)
+        self.plot_widget.plot3.setData(indexes, a3)
         self.plot_widget.update()
 
     def update_render_area(self):
-        primitives = {'points' : [],
-                      'polyline' : [],
-                      'polygon' : []
-                      }
+        class Paint_Kit:
+            def __init__(self, pen = QPen(), brush = QBrush()):
+                self.pen = pen
+                self.brush = brush
+                self.points = []
+                self.lines = []
+                self.polylines = []
+                self.polygons = []
 
-        redlines = []
-        redpolys = []
-        redpoints = []
+        draw_packets = []
 
         if self.stage == 0:
             #BUG if no points added and mouse near
+            elements = Paint_Kit()
             if len(self.polyline) == 1 or self.mouse_near:
-                primitives['points'].append(self.polyline[0])
+                elements.points.append(self.polyline[0])
             if len(self.polyline) > 1:
-                primitives['polyline'] = self.polyline
+                elements.polyline = self.polyline
+            draw_packets.append(elements)
         elif self.stage == 1:
-            primitives['polygon'] = self.polyline
-            if self.origin_is_set:
-                primitives['points'] += [self.origin]
-                redlines += self.tempbowtielines
-                redpolys = self.tempbowtieshapes
-                redpoints = self.redpoints
+            black = Paint_Kit()
+            black.polygons.append(self.polyline)
 
-        # print('PRIMITIVES SENT TO RENDERAREA', primitives)
-        # print(f'NUMBER OF BLACK PRIMITIVES {len(primitives)}')
-        # print(f'NUMBER OF RED RUNGS: {len(redlines) - 2}')
-        self.render_area.primitives = primitives
-        self.render_area.redlines = redlines
-        self.render_area.redpolys = redpolys
-        self.render_area.redpoints = redpoints
+            green = Paint_Kit(QPen(Qt.PenStyle.NoPen), QBrush(Qt.green, Qt.CrossPattern))
+            red = Paint_Kit(QPen(Qt.PenStyle.NoPen), QBrush(Qt.red, Qt.CrossPattern))
+            purple = Paint_Kit(QPen('blue'))
+
+            if self.origin_is_set:
+                black.points.append(self.origin)
+                green.polygons += self.division_shapes_1
+                red.polygons += self.division_shapes_2
+                purple.lines.append(self.division_ray)
+
+            draw_packets.append(black)
+            draw_packets.append(red)
+            draw_packets.append(green)
+            draw_packets.append(purple)
+
+        self.render_area.draw_packets = draw_packets
         self.render_area.update()

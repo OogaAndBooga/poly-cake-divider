@@ -1,7 +1,6 @@
 from PySide6.QtCore import QLine, QPoint, QRect, QSize, Qt
-from PySide6.QtGui import (QBrush, QConicalGradient, QLinearGradient, QPainter,
-                           QPainterPath, QPalette, QPen, QPixmap, QPolygon,
-                           QRadialGradient)
+from PySide6.QtGui import (QBrush, QPainter,
+                           QPalette, QPen)
 
 from PySide6.QtWidgets import QWidget
 
@@ -10,15 +9,6 @@ import sys
 #TODO process keyboard inputs in Window widget
 
 class RenderArea(QWidget):
-    redpoints = []
-    points = []
-    keysel = 0
-    redlines = []
-    redpolys = []
-    primitives = {'points' : [],
-                      'polyline' : [],
-                      'polygon' : []
-                      }
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -68,69 +58,48 @@ class RenderArea(QWidget):
         if key == Qt.Key_Z:
             self.keysel += 1
             self.keysel %= len(self.redpolys)
+        if key == Qt.Key_R:
+            pressed = 'reset'
             # print(f'KEYSEL: {self.keysel}')
         # print(f'\nKEYPRESS EVENT: {event}\n')
 
         self.program.key_press_event(pressed)
 
     def paintEvent(self, event):
-        # print(event,self.primitives)
-
-        def drawP(pos, r = 6):
-            painter.drawEllipse(pos, r, r)
-
-
         with QPainter(self) as painter:
-            painter.setPen(self.pen)
-            painter.setBrush(self.brush)
+            def drawP(pos, r = 6):
+                painter.drawEllipse(pos, r, r)
+            for draw_packet in self.draw_packets:
+                dp = draw_packet #TODO bad variable name
+                painter.setPen(draw_packet.pen)
+                painter.setBrush(draw_packet.brush)
 
-            painter.save()
-
-            p = QPen()
-            p.setColor('blue')
-            p.setWidth(1)
-            painter.setPen(p)
-            if self.redlines != []:
-                # painter.setPen(self.palette().light().color())
-                for l in self.redlines:
-                    painter.drawLine(QLine(*l[0], *l[1]))
-
-            #Qt.HorPattern
-            b = QBrush(QBrush(Qt.green, Qt.CrossPattern))
-            # CrossPattern
-            # p.setColor('red')
-            painter.setBrush(b)
-            # set_brush(QBrush(Qt.green, style))
-            # if self.redpolys != []:
-            i = 0
-            for poly in self.redpolys:
-                test = [QPoint(*p) for p in poly]
-                print('_', end = '')
-                if i == self.keysel:
-                    print(f'\b{i}',end='')
-                    painter.drawPolygon(test)
-                if self.keysel == 999:
-                    painter.drawPolygon(test)
-                i += 1
-            print()
-
-            for p in self.redpoints:
-                drawP(QPoint(*p))
-
-            painter.restore()
-
-            if self.primitives['points'] != []:
-                for p in self.primitives['points']:
+                for p in dp.points:
                     drawP(QPoint(*p))
+                for l in dp.lines:
+                    painter.drawLine(QLine(*l[0], *l[1]))
+                for plne in dp.polylines:
+                    painter.drawPolyline( [QPoint(*p) for p in plne])
+                for poly in dp.polygons:
+                    painter.drawPolygon([QPoint(*p) for p in poly])
 
-            if self.primitives['polyline'] != []:
-                painter.drawPolyline( [QPoint(*p) for p in self.primitives['polyline']])
-
-            if self.primitives['polygon'] != []:
-                painter.drawPolygon([QPoint(*p) for p in self.primitives['polygon']])
-
-
-
+            # border
             painter.setPen(self.palette().dark().color())
             painter.setBrush(Qt.NoBrush)
-            painter.drawRect(QRect(0, 0, self.width() - 10, self.height() - 1))
+            painter.drawRect(QRect(0, 0, self.width() - 1, self.height() - 1))
+
+            # #Qt.HorPattern
+            # b = QBrush(QBrush(Qt.green, Qt.CrossPattern))
+            # # CrossPattern
+            # # p.setColor('red')
+
+            # # for poly in self.redpolys:
+            # #     test = [QPoint(*p) for p in poly]
+            # #     print('_', end = '')
+            # #     if i == self.keysel:
+            #         print(f'\b{i}',end='')
+            #         painter.drawPolygon(test)
+            #     if self.keysel == 999:
+            #         painter.drawPolygon(test)
+            #     i += 1
+            # print()
