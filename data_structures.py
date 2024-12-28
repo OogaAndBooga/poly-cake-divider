@@ -271,10 +271,9 @@ class Division:
         self.slices1 = slices1
         self.slices2 = slices2
 
+        self.shapes1 = [shape for slice in slices1 for shape in slice.shapes]
+        self.shapes2 = [shape for slice in slices2 for shape in slice.shapes]
+
         self.area1 = sum([slice.area for slice in slices1])
         self.area2 = sum([slice.area for slice in slices2])
         self.total_area = self.area1 + self.area2
-
-
-        self.shapes1 = [shape for slice in slices1 for shape in slice.shapes]
-        self.shapes2 = [shape for slice in slices2 for shape in slice.shapes]
