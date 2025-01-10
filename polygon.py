@@ -32,6 +32,8 @@ class Polygon :
         self.gen_slices()
         self.gen_divisions()
         self.calculate_area()
+        self.determine_equal_division_slices()
+        # print(self.future_socialist_divisions)
 
     #TODO 2 rays have the same angle or are very close
     def gen_rays(self):
@@ -58,6 +60,7 @@ class Polygon :
         self.area = 0
         for slice in self.slices:
             self.area += slice.area
+        self.half_area = self.area / 2
 
     def gen_divisions(self):
         self.divisions = []
@@ -75,4 +78,13 @@ class Polygon :
                 slices1 = self.slices[slice_index:] + self.slices[:slice_index - half_len]
                 slices2 = self.slices[slice_index - half_len : slice_index]
 
-            self.divisions.append(Division(self.slices[slice_index].ray1, slices1, slices2))
+            self.divisions.append(Division(self.slices[slice_index].ray1, slices1, slices2, index = len(self.divisions)))
+
+    #FIXME WORK FOR CASES WITH MORE THAN 1 SOLUTION
+    def determine_equal_division_slices(self):
+        self.future_socialist_divisions = []
+        division_pairs = [(self.divisions[-1], self.divisions[0])] + list(zip(self.divisions, self.divisions[1:]))
+        for d1, d2 in division_pairs:
+            # d1, d2 = div_pair
+            if d1.area1 > self.half_area and d2.area1 < self.half_area:
+                self.future_socialist_divisions.append(d1)

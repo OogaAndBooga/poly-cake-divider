@@ -30,9 +30,10 @@ class Window(QWidget):
             1:[poly1, (236, 367)],
             2:[poly2, (398, 375)],#(209, 314)(398, 375)
             3:[poly3, origin3],
-            4:[poly4, origin4] 
+            4:[poly4, origin4],
+            5:[poly5, origin5]
         }
-        n = 0
+        n = 5
         if n:
             poly = l[n][0]
             origin = l[n][1]
@@ -52,8 +53,7 @@ class Window(QWidget):
         main_layout.setRowMinimumHeight(1, 6)
         self.setLayout(main_layout)
 
-        self.setWindowTitle("Basic Drawing")
-
+        self.setWindowTitle("Cake Sharer")
 if __name__ == '__main__':
 
     import sys

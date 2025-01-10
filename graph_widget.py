@@ -25,6 +25,8 @@ class Plot_Widget(pg.PlotWidget):
         self.line = pg.InfiniteLine(0)
         self.addItem(self.line)
 
+        self.line2 = pg.InfiniteLine(0)
+        self.addItem(self.line2)
         # plotitem.scene().connect(self.clicke)
         #emits signal only if plot is clicked
         # plotdataitem.sigClicked.connect(self.clicke)
@@ -36,6 +38,9 @@ class Plot_Widget(pg.PlotWidget):
     def set_btindex(self, btindex):
         # self.linear_region.setRegion([self.btindex, self.btindex])
         self.line.setValue(btindex)
+
+    def set_line2(self, index):
+        self.line2.setValue(index)
 
     def clicke(self, event):
         print(event)

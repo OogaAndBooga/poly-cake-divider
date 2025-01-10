@@ -107,9 +107,11 @@ class Program_Logic():
             t1 = time.time()
             self.poly.set_origin_and_calculate_divisions(self.origin)
             t2 = time.time()
+            print(f'POLY STATS --------------- ')
             print(f'CALCULATED {total_calculations[0]} INTERSECTIONS IN {round(t2-t1,2)} seconds')
             print(f'POLYGON AREA: {self.poly.area}')
             print(f'NUMBER OF SLICES: {len(self.poly.slices)}')
+            print(f'INDEXES OF SOCIALSIT DIVISIONS: {[d.index for d in self.poly.future_socialist_divisions]}')
             if self.stage == 1:
                 self.advance_stage()
             self.update_screen()
@@ -174,6 +176,8 @@ class Program_Logic():
         self.plot_widget.plot1.setData(indexes, a1)
         self.plot_widget.plot2.setData(indexes, a2)
         self.plot_widget.plot3.setData(indexes, a3)
+
+        self.plot_widget.set_line2(self.poly.future_socialist_divisions[0].index)
         self.plot_widget.update()
 
     def update_render_area(self):

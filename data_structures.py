@@ -266,8 +266,9 @@ class Slice():
             self.area += shape.area
 
 class Division:
-    def __init__(self, ray, slices1, slices2):
+    def __init__(self, ray, slices1, slices2, index):
         self.ray = ray
+        self.index = index
         self.slices1 = slices1
         self.slices2 = slices2
 
