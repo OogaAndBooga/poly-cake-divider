@@ -42,8 +42,8 @@ class Polygon :
             ray = Ray(self.origin, vertex)
             ray_opposite = ray.gen_opposite()
 
-            ray.intersect_polygon(self)
-            ray_opposite.intersect_polygon(self)
+            ray.intersect_segments(self.segments)
+            ray_opposite.intersect_segments(self.segments)
 
             self.rays.append(ray)
             self.rays.append(ray_opposite)

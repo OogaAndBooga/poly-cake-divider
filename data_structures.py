@@ -92,9 +92,9 @@ class Ray :
         
 
     #TODO create self.intersections_opposite for clearer code?
-    def intersect_polygon(self, poly):
+    def intersect_segments(self, segments):
         self.intersections = []
-        for seg in poly.segments:
+        for seg in segments:
             if self.poly_vertex is not None:
                 ray_on_segment_edge = self.poly_vertex in seg
             else:
