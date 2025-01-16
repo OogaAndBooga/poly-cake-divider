@@ -6,6 +6,9 @@ poly2 = [(160, 335), (94, 272), (159, 177), (179, 76), (318, 68), (412, 130), (4
 #origin = (363, 515) for divide by zero errors
 # (274, 331) dvzerror
 #(586, 419) dvzerror
+# (309, 245) multible socialisable divisions
+# (324, 262) some sort of error occurs
+
 poly3 = [(208, 271), (319, 134), (511, 204), (326, 410)]
 origin3 = (375, 267)
 # origin = (375, 267) incorrect generation of bowties 
