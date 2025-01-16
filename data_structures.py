@@ -6,7 +6,7 @@ from math import dist, sqrt
 total_calculations = [0]
 
 def toTuple(vec):
-    return (vec.x, vec.y)
+    return (float(vec.x), float(vec.y))
 
 #TODO case in which segment is parallel to ray
 def seg_ray_intersection_math(segment, ray):
@@ -17,6 +17,10 @@ def seg_ray_intersection_math(segment, ray):
 
     #TODO increase speed of computations
     #FIXME divide by zero potential error
+
+    #FIXME this error
+    # RuntimeWarning: invalid value encountered in scalar divide
+    #   k = (abs(b) ** 2 - c @ b - (abs(a) ** 2) * (r @ b) / (a @ r)) / ((b @ r) * (a @ c) / (a @ r) - (b @ c))
 
     k = (abs(b) ** 2 - c @ b - (abs(a) ** 2) * (r @ b) / (a @ r)) / ((b @ r) * (a @ c) / (a @ r) - (b @ c))
     d = (abs(a) ** 2 + k * (a @ c)) / (a @ r)
@@ -128,14 +132,16 @@ class Ray :
     
     def gen_line_tuple(self):
         r = self
-        dir = r.direction * 100
+        dir = r.direction * 6100
         a = r.origin + dir
         b = r.origin - dir
         return (toTuple(a), toTuple(b))
 
 class Rung:
-    def __init__(self, origin, a, b):
-        self.segment = Segment(a, b)
+    def __init__(self, origin, segment):
+        self.segment = segment
+        a, b = segment
+        # self.segment = Segment(a, b)
         self.ray1 = Ray(origin, a)
         self.ray2 = Ray(origin, b)
         self.origin = origin
@@ -199,9 +205,11 @@ class Slice():
         self.gen_shapes()
         self.is_empty = (self.shapes == [])
         self.calculate_area()
+        # self.segments = [r.segment for r in self.rungs]
 
     def gen_rungs(self):
         self.rungs = []
+        self.original_poly_segments = []
 
         r1int = self.ray1.intersections
         r2int = self.ray2.intersections
@@ -221,14 +229,16 @@ class Slice():
                     int2 = i
                     break
 
-            self.rungs += [Rung(self.origin, int1.point, int2.point)]
+            self.rungs += [Rung(self.origin, Segment(int1.point, int2.point))]
+            self.original_poly_segments += [cseg]
+
 
         def compare_seg_origin_distance(rung1, rung2):
             if rung1 is rung2:
                 return 0
             
-            # True -> 1
-            # False -> -1
+            # l(True) -> 1
+            # l(False) -> -1
             l = lambda b: int(b) * 2 - 1
             
             if rung1.ray1.poly_vertex is rung2.ray1.poly_vertex:
@@ -264,6 +274,46 @@ class Slice():
         self.area = 0
         for shape in self.shapes:
             self.area += shape.area
+
+    def divide_using_vector(self, v):
+        div_ray = Ray(self.origin, direction = v)
+        div_ray.intersect_segments(self.original_poly_segments)
+        
+        sub_slice1 = Slice(self.ray1, div_ray)
+        sub_slice2 = Slice(div_ray, self.ray2)
+        # breakpoint()
+        return sub_slice1, sub_slice2
+
+    def divide_using_ratio(self, ratio):
+        print('divide by ratio ---------------- ')
+        print(f'slice area: {self.area}')
+        print(f'r: {ratio}')
+
+        self.rlist = []
+        r = ratio
+        ACCURACY = 0.1
+        bound1_vec = self.ray1.direction.unit()
+        bound2_vec = self.ray2.direction.unit()
+        div_vector = (bound1_vec + bound2_vec).unit()
+        sub_slice1, sub_slice2 = self.divide_using_vector(div_vector)
+        cy = 0
+        while abs(self.area * r - sub_slice1.area) >= ACCURACY:
+            self.rlist.append(Ray(self.origin, direction = div_vector))
+            cy += 1
+            if r * self.area > sub_slice1.area:
+                bound1_vec = div_vector
+            else:
+                bound2_vec = div_vector
+            div_vector = (bound1_vec.unit() + bound2_vec.unit()).unit()
+            div_ray = Ray(self.origin, direction = div_vector)
+            div_ray.intersect_segments(self.original_poly_segments)
+            sub_slice1, sub_slice2 = self.divide_using_vector(div_vector)
+
+        print(f'max error: {ACCURACY}')
+        print(f'iterations to converge: {cy}')
+
+        return sub_slice1, sub_slice2
+
 
 class Division:
     def __init__(self, ray, slices1, slices2, index):

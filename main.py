@@ -21,6 +21,9 @@ class Window(QWidget):
         self.render_area = RenderArea()
         self.program_logic = Program_Logic()
 
+        pushbutton = QPushButton( text='toggle divided')
+        pushbutton.clicked.connect(self.program_logic.toggle_div_display)
+
         self.render_area.pass_program_logic_instance(self.program_logic)
         self.program_logic.pass_render_area_instance(self.render_area)
         self.program_logic.pass_plot_widget_instance(self.plot_widget)
@@ -33,7 +36,7 @@ class Window(QWidget):
             4:[poly4, origin4],
             5:[poly5, origin5]
         }
-        n = 5
+        n = 2
         if n:
             poly = l[n][0]
             origin = l[n][1]
@@ -50,6 +53,7 @@ class Window(QWidget):
 
         main_layout.addWidget(self.render_area, 0, 0, 1, 4)
         main_layout.addWidget(self.plot_widget, 1, 1, 1, 1)
+        main_layout.addWidget(pushbutton, 1, 0, 1, 1)
         main_layout.setRowMinimumHeight(1, 6)
         self.setLayout(main_layout)
 

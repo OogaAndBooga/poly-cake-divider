@@ -26,6 +26,7 @@ class Program_Logic():
     origin = None #one of the defining points for division
     origin_is_set = False
     MOUSENEARDIST = 10
+    display_socialised_division = False
     # tempbowtiedata = []
     # tempbowtielines = []
     # tempbowtieshapes = []
@@ -112,9 +113,16 @@ class Program_Logic():
             print(f'POLYGON AREA: {self.poly.area}')
             print(f'NUMBER OF SLICES: {len(self.poly.slices)}')
             print(f'INDEXES OF SOCIALSIT DIVISIONS: {[d.index for d in self.poly.future_socialist_divisions]}')
+            sd = self.poly.socialised_divisions[0]
+            print(f'area1: {sd.area1}')
+            print(f'area2 = {sd.area2}')
             if self.stage == 1:
                 self.advance_stage()
             self.update_screen()
+
+    def toggle_div_display(self):
+        self.display_socialised_division = not self.display_socialised_division
+        self.update_render_area()
 
     def display_ray_data_gen(self):
         if(len(self.poly.rays) == 0):
@@ -213,21 +221,28 @@ class Program_Logic():
             red = Paint_Kit(QPen(Qt.PenStyle.NoPen), QBrush(Qt.red, Qt.CrossPattern))
             purple = Paint_Kit(QPen('blue'))
             pink = Paint_Kit(QPen(Qt.PenStyle.NoPen), QBrush('pink', Qt.CrossPattern))
+            orange = Paint_Kit(QPen('orange'))
 
             if self.origin_is_set:
                 black.points.append(self.origin)
-                green.polygons += self.division_shapes_1
-                red.polygons += self.division_shapes_2
-                purple.lines.append(self.division_ray)
-                pink.polygons += self.pink_center_shapes
 
-            for e in [black, red, green, purple, pink]:
-                draw_packets.append(e)
+                if not self.display_socialised_division:
+                    green.polygons += self.division_shapes_1
+                    red.polygons += self.division_shapes_2
+                    purple.lines.append(self.division_ray)
+                    pink.polygons += self.pink_center_shapes
+                else:
+                    sd = self.poly.socialised_divisions[0]
+                    green.polygons += [s.tup for s in sd.shapes1]
+                    red.polygons += [s.tup for s in sd.shapes2]
 
-            # draw_packets.append(black)
-            # draw_packets.append(red)
-            # draw_packets.append(green)
-            # draw_packets.append(purple)
+                s = [a.gen_line_tuple() for a in self.poly.rlist]
+                # print(s)
+                # orange.lines += s
+                orange.lines += [s[-1]]
+
+            for color in [black, red, green, purple, pink, orange]:
+                draw_packets.append(color)
 
         self.render_area.draw_packets = draw_packets
         self.render_area.update()

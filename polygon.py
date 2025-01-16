@@ -33,6 +33,10 @@ class Polygon :
         self.gen_divisions()
         self.calculate_area()
         self.determine_equal_division_slices()
+        self.socialise_possible_divisions()
+
+        # print()
+
         # print(self.future_socialist_divisions)
 
     #TODO 2 rays have the same angle or are very close
@@ -85,6 +89,16 @@ class Polygon :
         self.future_socialist_divisions = []
         division_pairs = [(self.divisions[-1], self.divisions[0])] + list(zip(self.divisions, self.divisions[1:]))
         for d1, d2 in division_pairs:
-            # d1, d2 = div_pair
             if d1.area1 > self.half_area and d2.area1 < self.half_area:
                 self.future_socialist_divisions.append(d1)
+
+    #TODO implement case with more than 1 solution, origin within the polygon
+    def socialise_possible_divisions(self):
+        self.socialised_divisions = []
+        for div in self.future_socialist_divisions:
+            slice = div.slices1[0]
+            r = (self.half_area - div.area2) / slice.area
+            sub_slice1, sub_slice2 = slice.divide_using_ratio(r)
+            socialised_div = Division(None, div.slices1[1:] + [sub_slice2], div.slices2 + [sub_slice1] , None)
+            self.socialised_divisions.append(socialised_div)
+            self.rlist = slice.rlist
