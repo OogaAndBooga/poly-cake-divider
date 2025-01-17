@@ -120,6 +120,16 @@ class Program_Logic():
                 self.advance_stage()
             self.update_screen()
 
+    def load_poly_and_origin(self, data):
+        poly = data[0]
+        origin = data[1]
+        self.polyline = poly
+        self.mouse_near = True
+        self.stage = 0
+        self.click_event(poly[0])
+        self.click_event(origin)
+
+
     def toggle_div_display(self):
         self.display_socialised_division = not self.display_socialised_division
         self.update_render_area()

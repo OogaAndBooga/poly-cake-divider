@@ -30,7 +30,7 @@ class Window(QWidget):
         self.program_logic.pass_plot_widget_instance(self.plot_widget)
 
         #simulate user input
-        l = {
+        premade_polys = {
             1:[poly1, (236, 367)],
             2:[poly2, (398, 375)],#(209, 314)(398, 375)
             3:[poly3, origin3],
@@ -39,19 +39,15 @@ class Window(QWidget):
         }
         n = 2
         if n:
-            poly = l[n][0]
-            origin = l[n][1]
-            self.program_logic.polyline = poly
-            self.program_logic.mouse_near = True
-            self.program_logic.click_event(poly[0])
-            self.program_logic.click_event(origin)
+            self.program_logic.load_poly_and_origin(premade_polys[n])
 
         main_layout = QGridLayout()
 
         Form = QWidget()
         ui = Ui_Form()
         ui.setupUi(Form)
-        ui.connect_signals(self.program_logic.toggle_div_display)
+        ui.set_combobox_options(premade_polys)
+        ui.connect_signals(self.program_logic)
 
         #what does this do?
         main_layout.setColumnStretch(0, 1)

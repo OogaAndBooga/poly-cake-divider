@@ -64,9 +64,18 @@ class Ui_Form(object):
         self.pushButton.setText(QCoreApplication.translate("Form", u"Toggle poly display", None))
         self.label.setText(QCoreApplication.translate("Form", u"Load poly", None))
     # retranslateUi
-    
-    def connect_signals(self, button_click):
-        self.pushButton.clicked.connect(button_click)
+
+    def set_combobox_options(self, options):
+        for o in options:
+            self.comboBox.addItem(str(o), (options[o]))
+
+    def connect_signals(self, program_logic):
+        self.pushButton.clicked.connect(program_logic.toggle_div_display)
+
+        def load_poly():
+            data = self.comboBox.itemData(self.comboBox.currentIndex())
+            program_logic.load_poly_and_origin(data)
+        self.comboBox.activated.connect(load_poly)
 
 if __name__ == '__main__':
     import sys
