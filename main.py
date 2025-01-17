@@ -7,6 +7,7 @@ from PySide6.QtWidgets import (QApplication, QGridLayout,
 from programlogic import Program_Logic
 from render_area import RenderArea
 from graph_widget import Plot_Widget
+from poly_ui_pyside6 import Ui_Form
 
 from test_polygons import *
 
@@ -47,17 +48,23 @@ class Window(QWidget):
 
         main_layout = QGridLayout()
 
+        Form = QWidget()
+        ui = Ui_Form()
+        ui.setupUi(Form)
+        ui.connect_signals(self.program_logic.toggle_div_display)
+
         #what does this do?
         main_layout.setColumnStretch(0, 1)
         main_layout.setColumnStretch(3, 1)
 
         main_layout.addWidget(self.render_area, 0, 0, 1, 4)
         main_layout.addWidget(self.plot_widget, 1, 1, 1, 1)
-        main_layout.addWidget(pushbutton, 1, 0, 1, 1)
+        main_layout.addWidget(Form, 1, 0, 1, 1)
         main_layout.setRowMinimumHeight(1, 6)
         self.setLayout(main_layout)
 
         self.setWindowTitle("Cake Sharer")
+
 if __name__ == '__main__':
 
     import sys
