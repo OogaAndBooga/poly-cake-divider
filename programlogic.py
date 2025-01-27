@@ -7,6 +7,9 @@ from data_structures import Segment
 from PySide6.QtGui import QBrush, QPen
 from PySide6.QtCore import  Qt
 
+import cv2 as cv
+import numpy as np
+
 def toTuple(vec):
     if type(vec) == Segment:
         return (toTuple(vec.a), toTuple(vec.b))
@@ -15,6 +18,7 @@ def toTuple(vec):
 #TODO detect intersection of polyline while inputing
 
 class Program_Logic():
+    is_counting_pixels = False
     bts = 2
     btindex = 0
     rayindex = 0
@@ -120,6 +124,8 @@ class Program_Logic():
                 self.advance_stage()
             self.update_screen()
 
+            self.count_pixels()
+
     def load_poly_and_origin(self, data):
         poly = data[0]
         origin = data[1]
@@ -129,6 +135,35 @@ class Program_Logic():
         self.click_event(poly[0])
         self.click_event(origin)
 
+    def count_pixels(self):
+        self.display_socialised_division = True
+        self.is_counting_pixels = True
+        self.render_area.black_background = True
+        self.update_render_area()
+
+        pm = self.render_area.grab()
+
+        self.is_counting_pixels = False
+        self.render_area.black_background = False
+        self.update_render_area()
+
+        fname = 'temp_r_area.tif'
+        pm.save(fname, 'tif')
+        img = cv.imread(fname)
+
+        blue = np.sum(img[:,:,0] == 255)
+        green = np.sum(img[:,:,1] == 255)
+        red = np.sum(img[:,:,2] == 255)
+
+        print(f'red PIXELS: {red}')
+        print(f'green PIXELS: {green}')
+        print(f'TOTAL PIXELS = {red + green}')
+        d = abs(red - green)
+        print(f'abs delta: {d}')
+        print(f'rel delta: {round(d / (red + green) * 100, 2)}%')
+
+        cv.imshow('asd', img)
+        # k = cv.waitKey(0)
 
     def toggle_div_display(self):
         self.display_socialised_division = not self.display_socialised_division
@@ -233,6 +268,14 @@ class Program_Logic():
             pink = Paint_Kit(QPen(Qt.PenStyle.NoPen), QBrush('pink', Qt.CrossPattern))
             orange = Paint_Kit(QPen('orange'))
 
+            blackfill = Paint_Kit(brush = QBrush(Qt.black))
+
+            # redfill = Paint_Kit(QPen(Qt.PenStyle.NoPen), brush = QBrush(Qt.red))
+            # greenfill = Paint_Kit(QPen(Qt.PenStyle.NoPen), brush = QBrush(Qt.green))
+
+            redfill = Paint_Kit(QPen(Qt.red), brush = QBrush(Qt.red))
+            greenfill = Paint_Kit(QPen(Qt.green), brush = QBrush(Qt.green))
+
             if self.origin_is_set:
                 black.points.append(self.origin)
 
@@ -246,6 +289,8 @@ class Program_Logic():
                     green.polygons += [s.tup for s in sd.shapes1]
                     red.polygons += [s.tup for s in sd.shapes2]
 
+                blackfill.polygons.append(self.polyline)
+
                 s = [a.gen_line_tuple() for a in self.poly.rlist]
                 # print(s)
                 # orange.lines += s
@@ -253,6 +298,11 @@ class Program_Logic():
 
             for color in [black, red, green, purple, pink, orange]:
                 draw_packets.append(color)
+
+            if self.is_counting_pixels:
+                redfill.polygons = red.polygons
+                greenfill.polygons = green.polygons
+                draw_packets = [redfill, greenfill]
 
         self.render_area.draw_packets = draw_packets
         self.render_area.update()

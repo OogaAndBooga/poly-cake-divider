@@ -10,6 +10,7 @@ import sys
 
 class RenderArea(QWidget):
     draw_packets = []
+    black_background = False
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -68,6 +69,10 @@ class RenderArea(QWidget):
 
     def paintEvent(self, event):
         with QPainter(self) as painter:
+            if self.black_background:
+                b = QBrush(Qt.black)
+                painter.fillRect(QRect(QPoint(0, 0), self.size()), b)
+
             def drawP(pos, r = 6):
                 painter.drawEllipse(pos, r, r)
             for draw_packet in self.draw_packets:
@@ -85,9 +90,11 @@ class RenderArea(QWidget):
                     painter.drawPolygon([QPoint(*p) for p in poly])
 
             # border
-            painter.setPen(self.palette().dark().color())
-            painter.setBrush(Qt.NoBrush)
-            painter.drawRect(QRect(0, 0, self.width() - 1, self.height() - 1))
+            if not self.black_background:
+                painter.setPen(self.palette().dark().color())
+                painter.setBrush(Qt.NoBrush)
+                painter.drawRect(QRect(0, 0, self.width() - 1, self.height() - 1))
+
 
             # #Qt.HorPattern
             # b = QBrush(QBrush(Qt.green, Qt.CrossPattern))

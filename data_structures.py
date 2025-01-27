@@ -291,7 +291,7 @@ class Slice():
 
         self.rlist = []
         r = ratio
-        ACCURACY = 0.1
+        ACCURACY = 0.0001
         bound1_vec = self.ray1.direction.unit()
         bound2_vec = self.ray2.direction.unit()
         div_vector = (bound1_vec + bound2_vec).unit()

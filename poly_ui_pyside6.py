@@ -24,7 +24,7 @@ class Ui_Form(object):
         # print('start------')
         if not Form.objectName():
             Form.setObjectName(u"Form")
-        Form.resize(152, 76)
+        # Form.resize(152, 76)
         self.verticalLayout = QVBoxLayout(Form)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.pushButton = QPushButton(Form)
@@ -47,6 +47,8 @@ class Ui_Form(object):
 
         self.horizontalLayout.addWidget(self.comboBox)
 
+        self.pb2 = QPushButton(text = 'count pixels')
+        self.verticalLayout.addWidget(self.pb2)
 
         self.gridLayout.addLayout(self.horizontalLayout, 1, 0, 1, 1)
 
@@ -71,6 +73,7 @@ class Ui_Form(object):
 
     def connect_signals(self, program_logic):
         self.pushButton.clicked.connect(program_logic.toggle_div_display)
+        self.pb2.clicked.connect(program_logic.count_pixels)
 
         def load_poly():
             data = self.comboBox.itemData(self.comboBox.currentIndex())
