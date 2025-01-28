@@ -24,7 +24,7 @@ class RenderArea(QWidget):
         self.setBackgroundRole(QPalette.Base)
         self.setAutoFillBackground(True)
 
-        self.setFocusPolicy(Qt.StrongFocus)
+        self.setFocusPolicy(Qt.NoFocus)
         self.setMouseTracking(True)
 
     def minimumSizeHint(self):
@@ -43,29 +43,18 @@ class RenderArea(QWidget):
     def mousePressEvent(self, event):
         self.program.click_event(event.pos().toTuple())
 
-    def keyPressEvent(self, event):
-        key = event.key()
-        pressed = None
-        if key == Qt.Key_Q:
-            sys.exit()
-        if key == Qt.Key_K:
-            pressed = 'up'
-            self.keysel = 999
-        if key == Qt.Key_M:
-            pressed = 'down'
+    # def keyPressEvent(self, event):
             # self.keysel = 0
-        if key == Qt.Key_T:
-            pressed = 'toggle'
-            self.keysel = 999
-        if key == Qt.Key_Z:
-            self.keysel += 1
-            self.keysel %= len(self.redpolys)
-        if key == Qt.Key_R:
-            pressed = 'reset'
+        # if key == Qt.Key_T:
+        #     pressed = 'toggle'
+        #     self.keysel = 999
+        # if key == Qt.Key_Z:
+        #     self.keysel += 1
+        #     self.keysel %= len(self.redpolys)
+        # if key == Qt.Key_R:
+        #     pressed = 'reset'
             # print(f'KEYSEL: {self.keysel}')
         # print(f'\nKEYPRESS EVENT: {event}\n')
-
-        self.program.key_press_event(pressed)
 
     def paintEvent(self, event):
         with QPainter(self) as painter:
@@ -94,12 +83,6 @@ class RenderArea(QWidget):
                 painter.setPen(self.palette().dark().color())
                 painter.setBrush(Qt.NoBrush)
                 painter.drawRect(QRect(0, 0, self.width() - 1, self.height() - 1))
-
-
-            # #Qt.HorPattern
-            # b = QBrush(QBrush(Qt.green, Qt.CrossPattern))
-            # # CrossPattern
-            # # p.setColor('red')
 
             # # for poly in self.redpolys:
             # #     test = [QPoint(*p) for p in poly]

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from PySide6.QtWidgets import (QApplication, QGridLayout,
                                QLabel, QWidget, QPushButton)
+from PySide6.QtCore import Qt
 
 # from polygon import Polygon   
 from programlogic import Program_Logic
@@ -21,9 +22,6 @@ class Window(QWidget):
         self.plot_widget = Plot_Widget()
         self.render_area = RenderArea()
         self.program_logic = Program_Logic()
-
-        pushbutton = QPushButton( text='toggle divided')
-        pushbutton.clicked.connect(self.program_logic.toggle_div_display)
 
         self.render_area.pass_program_logic_instance(self.program_logic)
         self.program_logic.pass_render_area_instance(self.render_area)
@@ -60,6 +58,22 @@ class Window(QWidget):
         self.setLayout(main_layout)
 
         self.setWindowTitle("Cake Sharer")
+
+        self.setFocusPolicy(Qt.StrongFocus)
+
+    def keyPressEvent(self, event):
+            key = event.key()
+            pressed = None
+            if key == Qt.Key_Q:
+                sys.exit()
+                pressed = None
+            if key == Qt.Key_K:
+                pressed = 'up'
+                self.keysel = 999
+            if key == Qt.Key_M:
+                pressed = 'down'
+
+            self.program_logic.key_press_event(pressed)
 
 if __name__ == '__main__':
 
