@@ -72,8 +72,11 @@ class Window(QWidget):
                 self.keysel = 999
             if key == Qt.Key_M:
                 pressed = 'down'
+            if key == Qt.Key_R:
+                pressed = 'reset'
 
-            self.program_logic.key_press_event(pressed)
+            if pressed is not None:
+                self.program_logic.key_press_event(pressed)
 
 if __name__ == '__main__':
 

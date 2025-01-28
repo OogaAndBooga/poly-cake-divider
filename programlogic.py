@@ -65,15 +65,12 @@ class Program_Logic():
 
     def key_press_event(self, key):
         if key != 'reset':
-            if key == 'up':
-                self.sindex += 1
-            elif key == 'down':
-                self.sindex -= 1
-            # elif key == 'toggle':
-            #     self.bts += 1
-            #     self.bts %= 3
+            if self.stage == 2 and not self.display_socialised_division:
+                if key == 'up':
+                    self.sindex += 1
+                elif key == 'down':
+                    self.sindex -= 1
 
-            if self.stage == 2:
                 if 0 > self.sindex or self.sindex >= len(self.poly.slices):
                     self.sindex %= len(self.poly.slices)
                 
