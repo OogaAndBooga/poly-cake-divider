@@ -73,7 +73,8 @@ class Window(QWidget):
             if key == Qt.Key_M:
                 pressed = 'down'
 
-            self.program_logic.key_press_event(pressed)
+            if pressed is not None:
+                self.program_logic.key_press_event(pressed)
 
 if __name__ == '__main__':
 
