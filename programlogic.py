@@ -83,6 +83,10 @@ class Program_Logic():
             self.reset_to_stage(0)
         self.update_screen()
 
+    def input_origin_as_string(self, sorigin : str):
+        origin = eval(sorigin)
+        self.click_event(origin)
+
     def mouse_move_event(self, pos):
         if self.stage == 0:
             if len(self.polyline) > 2 and dist(self.polyline[0], pos) < self.MOUSENEARDIST:

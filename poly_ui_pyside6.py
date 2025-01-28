@@ -16,7 +16,7 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QApplication, QComboBox, QGridLayout, QHBoxLayout,
-    QLabel, QPushButton, QSizePolicy, QVBoxLayout,
+    QLabel, QPushButton, QSizePolicy, QVBoxLayout,QLineEdit,
     QWidget)
 
 class Ui_Form(object):
@@ -50,6 +50,10 @@ class Ui_Form(object):
         self.pb2 = QPushButton(text = 'count pixels')
         self.verticalLayout.addWidget(self.pb2)
 
+        self.led = QLineEdit(text='(318, 276)')
+        self.led.editingFinished.connect(self.led.clearFocus)
+        self.verticalLayout.addWidget(self.led)
+
         self.gridLayout.addLayout(self.horizontalLayout, 1, 0, 1, 1)
 
 
@@ -74,6 +78,7 @@ class Ui_Form(object):
     def connect_signals(self, program_logic):
         self.pushButton.clicked.connect(program_logic.toggle_div_display)
         self.pb2.clicked.connect(program_logic.count_pixels)
+        self.led.editingFinished.connect(lambda: program_logic.input_origin_as_string(str(self.led.text())))
 
         def load_poly():
             data = self.comboBox.itemData(self.comboBox.currentIndex())
