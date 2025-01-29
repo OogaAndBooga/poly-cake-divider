@@ -123,12 +123,6 @@ class Ray :
                 d = sol['d']
                 k = sol['k']
 
-                dpos = (d >= 0)
-                if not self.flipped:
-                    section = dpos
-                else:
-                    section = not dpos
-
                 if 0 <= k <= 1 and 0 < d:
                     self.intersections.append(
                         Intersection(self.origin + self.direction * d, seg)
@@ -297,7 +291,6 @@ class Slice():
         
         sub_slice1 = Slice(self.ray1, div_ray)
         sub_slice2 = Slice(div_ray, self.ray2)
-        # breakpoint()
         return sub_slice1, sub_slice2
 
     def divide_using_ratio(self, ratio):
