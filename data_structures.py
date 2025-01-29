@@ -93,7 +93,19 @@ class Ray :
     def gen_opposite(self):
         o_ray = Ray(self.origin, direction = -self.direction)
         return o_ray
+
+    #TODO this function is not used anywhere, i am not 100% certain that it works
+    def intersects_slice(self, slice):
+        if self.origin != slice.origin:
+            raise RuntimeError('slice.origin and ray.origin must be the same')
         
+        # each ray is rotated away from the slice area
+        p1 = slice.ray1.direction.rotateZ(-pi / 2)
+        p2 = slice.ray2.direction.rotateZ(pi / 2)
+
+        r = p1 @ self.direction > 0 and p2 @ self.direction > 0
+        # print(f'p1: {slice.ray1.angle}\nself: {self.angle}\np2: {slice.ray2.angle}\n r: {r}\n')
+        return r
 
     #TODO create self.intersections_opposite for clearer code?
     def intersect_segments(self, segments):
@@ -194,6 +206,7 @@ class Slice():
     opposite = None
     next = None
     previous = None
+    _is_empty = None
 
     def __init__(self, ray1, ray2):
         self.origin = ray1.origin
@@ -203,10 +216,13 @@ class Slice():
         self.gen_rungs()
         self.origin_inside_poly = (len(self.rungs) % 2 == 1)
         self.gen_shapes()
-        self.is_empty = (self.shapes == [])
+        self._is_empty = (self.shapes == [])
         self.calculate_area()
         # self.segments = [r.segment for r in self.rungs]
 
+    @property
+    def is_empty(self):
+        return self._is_empty
     def gen_rungs(self):
         self.rungs = []
         self.original_poly_segments = []
@@ -314,17 +330,56 @@ class Slice():
 
         return sub_slice1, sub_slice2
 
+class UncutPizzaSlices :
+    def __init__(self, slices):
+        self.slices = slices
+        self.shapes = [shape for slice in slices for shape in slice.shapes]
+        self.area = sum([slice.area for slice in slices])
+
+    def does_ray_intersect(self, ray):
+        for slice in self.slices:
+            if ray.intersects_slice(slice):
+                return True
+        return False
 
 class Division:
     def __init__(self, ray, slices1, slices2, index):
-        self.ray = ray
+        self.ray = ray # ray is only used for display purposes
         self.index = index
+
         self.slices1 = slices1
         self.slices2 = slices2
 
-        self.shapes1 = [shape for slice in slices1 for shape in slice.shapes]
-        self.shapes2 = [shape for slice in slices2 for shape in slice.shapes]
+        self.cut_slice_1 = slices1[0]
+        self.cut_slice_2 = slices2[0] #TODO is this correct?
 
-        self.area1 = sum([slice.area for slice in slices1])
-        self.area2 = sum([slice.area for slice in slices2])
+        self.pizza1 = UncutPizzaSlices(slices1)
+        self.pizza2 = UncutPizzaSlices(slices2)
+
+        self.shapes1 = self.pizza1.shapes
+        self.shapes2 = self.pizza2.shapes
+
+        self.area1 = self.pizza1.area
+        self.area2 = self.pizza2.area
+
         self.total_area = self.area1 + self.area2
+        self.half_area = self.total_area / 2
+
+    def gen_socialised_division(self):
+        # print (self.cut_slice_1.is_empty, self.cut_slice_2.is_empty)
+
+        if self.cut_slice_1.is_empty + self.cut_slice_2.is_empty == 1:
+            slice = self.slices1[0]
+            r = (self.half_area - self.area2) / slice.area
+            sub_slice1, sub_slice2 = slice.divide_using_ratio(r)
+            socialised_div = Division(
+                None,
+                self.slices1[1:] + [sub_slice2],
+                self.slices2 + [sub_slice1],
+                self.index
+            )
+            socialised_div.rlist = slice.rlist #list of division ray iterations
+
+            return socialised_div
+        else:
+            pass

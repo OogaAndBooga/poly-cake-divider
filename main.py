@@ -30,7 +30,7 @@ class Window(QWidget):
         #simulate user input
         premade_polys = {
             1:[poly1, (236, 367)],
-            2:[poly2, (398, 375)],#(209, 314)(398, 375)
+            2:[poly2, origin2],#(209, 314)(398, 375) long time origin: (398, 375)
             3:[poly3, origin3],
             4:[poly4, origin4],
             5:[poly5, origin5]

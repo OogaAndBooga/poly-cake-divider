@@ -96,9 +96,6 @@ class Polygon :
     def socialise_possible_divisions(self):
         self.socialised_divisions = []
         for div in self.future_socialist_divisions:
-            slice = div.slices1[0]
-            r = (self.half_area - div.area2) / slice.area
-            sub_slice1, sub_slice2 = slice.divide_using_ratio(r)
-            socialised_div = Division(None, div.slices1[1:] + [sub_slice2], div.slices2 + [sub_slice1] , None)
+            socialised_div = div.gen_socialised_division()
             self.socialised_divisions.append(socialised_div)
-            self.rlist = slice.rlist
+            self.rlist = socialised_div.rlist
