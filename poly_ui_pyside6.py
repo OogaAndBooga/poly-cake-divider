@@ -54,6 +54,9 @@ class Ui_Form(object):
         self.led.editingFinished.connect(self.led.clearFocus)
         self.verticalLayout.addWidget(self.led)
 
+        self.pb3 = QPushButton(text = 'reset zoom')
+        self.verticalLayout.addWidget(self.pb3)
+
         self.gridLayout.addLayout(self.horizontalLayout, 1, 0, 1, 1)
 
 
@@ -79,6 +82,7 @@ class Ui_Form(object):
         self.pushButton.clicked.connect(program_logic.toggle_div_display)
         self.pb2.clicked.connect(program_logic.count_pixels)
         self.led.editingFinished.connect(lambda: program_logic.input_origin_as_string(str(self.led.text())))
+        self.pb3.clicked.connect(program_logic.reset_pan_and_zoom)
 
         def load_poly():
             data = self.comboBox.itemData(self.comboBox.currentIndex())

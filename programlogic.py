@@ -19,6 +19,13 @@ def toTuple(vec):
 
 class Program_Logic():
     is_counting_pixels = False
+    is_dragging = False
+    live_translation_amount = np.array((0, 0))
+    translation_amount = np.array((0, 0))
+    total_wheel_delta = 0
+    scale_amount = 1
+    SCALE_FACTOR = 0.003
+    MIN_SCALE_AMOUNT = 0.3
     bts = 2
     btindex = 0
     rayindex = 0
@@ -84,15 +91,55 @@ class Program_Logic():
         origin = eval(sorigin)
         self.click_event(origin)
 
+    def wheel_event(self, pos, angle_delta):
+        self.total_wheel_delta += angle_delta
+        self.scale_amount = 1 + self.total_wheel_delta * self.SCALE_FACTOR
+        if self.scale_amount < self.MIN_SCALE_AMOUNT:
+            self.scale_amount = self.MIN_SCALE_AMOUNT
+            self.total_wheel_delta = (self.MIN_SCALE_AMOUNT - 1)/ self.SCALE_FACTOR
+        # print(f'scale amount: {self.scale_amount}')
+        self.update_render_area()
+
+    def reset_pan_and_zoom(self):
+        self.live_translation_amount = np.array((0, 0))
+        self.translation_amount = np.array((0, 0))
+        self.total_wheel_delta = 0
+        self.scale_amount = 1
+        self.update_render_area()
+
+    def screen_pos_to_poly_pos(self, scrpos):
+        return (scrpos - self.live_translation_amount) / self.scale_amount
+
     def mouse_move_event(self, pos):
+        if self.is_dragging:
+            delta = np.array(pos) - self.drag_start_pos
+            self.live_translation_amount = self.translation_amount + delta
+            self.update_render_area()
+
         if self.stage == 0:
             if len(self.polyline) > 2 and dist(self.polyline[0], pos) < self.MOUSENEARDIST:
                 self.set_mouse_near(True)
             else :
                 self.set_mouse_near(False)
 
-    def click_event(self, pos):
-        print(pos)
+    def mouse_release_event(self, pos, button):
+        if button == Qt.RightButton:
+            self.is_dragging = False
+            delta = np.array(pos) - self.drag_start_pos
+            self.translation_amount += delta
+            self.live_translation_amount = self.translation_amount
+            self.update_render_area()
+
+    def click_event(self, pos, button = None):
+        if button == Qt.RightButton:
+            self.is_dragging = True
+            self.drag_start_pos = np.array(pos)
+            return
+
+        # take scale and translation into account
+        pos = self.screen_pos_to_poly_pos(pos)
+        pos = pos.tolist()
+
         if self.stage == 0:
             if not self.mouse_near:
                 self.polyline.append(pos)
@@ -139,13 +186,13 @@ class Program_Logic():
     def count_pixels(self):
         self.display_socialised_division = True
         self.is_counting_pixels = True
-        self.render_area.black_background = True
+        self.render_area.is_counting_pixels = True
         self.update_render_area()
 
         pm = self.render_area.grab()
 
         self.is_counting_pixels = False
-        self.render_area.black_background = False
+        self.render_area.is_counting_pixels = False
         self.update_render_area()
 
         fname = 'temp_r_area.tif'
@@ -306,4 +353,6 @@ class Program_Logic():
                 draw_packets = [redfill, greenfill]
 
         self.render_area.draw_packets = draw_packets
+        self.render_area.translation = self.live_translation_amount.tolist()
+        self.render_area.view_scale = self.scale_amount
         self.render_area.update()

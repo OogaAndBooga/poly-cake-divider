@@ -10,7 +10,9 @@ import sys
 
 class RenderArea(QWidget):
     draw_packets = []
-    black_background = False
+    is_counting_pixels = False
+    translatation = (0, 0)
+    view_scale = 1
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -41,7 +43,13 @@ class RenderArea(QWidget):
         self.program.mouse_move_event(event.pos().toTuple())
 
     def mousePressEvent(self, event):
-        self.program.click_event(event.pos().toTuple())
+        self.program.click_event(event.pos().toTuple(), event.button())
+
+    def mouseReleaseEvent(self, event):
+        self.program.mouse_release_event(event.pos().toTuple(), event.button())
+
+    def wheelEvent(self, event):
+        self.program.wheel_event(event.position().toTuple(), event.angleDelta().y())
 
     # def keyPressEvent(self, event):
             # self.keysel = 0
@@ -58,12 +66,19 @@ class RenderArea(QWidget):
 
     def paintEvent(self, event):
         with QPainter(self) as painter:
-            if self.black_background:
+            painter.save()
+            if not self.is_counting_pixels:
+                # the order in which you call the functions affects the result
+                painter.translate(*self.translation)
+                painter.scale(self.view_scale, self.view_scale)
+
+            if self.is_counting_pixels:
                 b = QBrush(Qt.black)
                 painter.fillRect(QRect(QPoint(0, 0), self.size()), b)
 
             def drawP(pos, r = 6):
                 painter.drawEllipse(pos, r, r)
+
             for draw_packet in self.draw_packets:
                 dp = draw_packet #TODO bad variable name
                 painter.setPen(draw_packet.pen)
@@ -79,7 +94,8 @@ class RenderArea(QWidget):
                     painter.drawPolygon([QPoint(*p) for p in poly])
 
             # border
-            if not self.black_background:
+            painter.restore()
+            if not self.is_counting_pixels:
                 painter.setPen(self.palette().dark().color())
                 painter.setBrush(Qt.NoBrush)
                 painter.drawRect(QRect(0, 0, self.width() - 1, self.height() - 1))
