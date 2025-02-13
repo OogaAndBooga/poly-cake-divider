@@ -91,13 +91,19 @@ class Program_Logic():
         origin = eval(sorigin)
         self.click_event(origin)
 
-    def wheel_event(self, pos, angle_delta):
+    def wheel_event(self, scrpos, angle_delta):
+        initial_scale = self.scale_amount
+
         self.total_wheel_delta += angle_delta
         self.scale_amount = 1 + self.total_wheel_delta * self.SCALE_FACTOR
         if self.scale_amount < self.MIN_SCALE_AMOUNT:
             self.scale_amount = self.MIN_SCALE_AMOUNT
             self.total_wheel_delta = (self.MIN_SCALE_AMOUNT - 1)/ self.SCALE_FACTOR
-        # print(f'scale amount: {self.scale_amount}')
+
+        d = scrpos + self.scale_amount / initial_scale * (self.live_translation_amount - scrpos)
+        self.translation_amount = d
+        self.live_translation_amount = self.translation_amount
+
         self.update_render_area()
 
     def reset_pan_and_zoom(self):
