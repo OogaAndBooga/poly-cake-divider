@@ -123,6 +123,7 @@ class Program_Logic():
             self.update_render_area()
 
         if self.stage == 0:
+            pos = self.screen_pos_to_poly_pos(pos)
             if len(self.polyline) > 2 and dist(self.polyline[0], pos) < self.MOUSENEARDIST:
                 self.set_mouse_near(True)
             else :
