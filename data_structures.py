@@ -335,6 +335,20 @@ class UncutPizzaSlices :
                 return True
         return False
 
+class Bowtie :
+    def __init__(self, slice1, slice2):
+        if slice1.origin != slice2.origin:
+            raise RuntimeError('the origins must be the same')
+        self.slice2 = slice2
+        self.slice1 = slice1
+        self.origin = slice1.origin
+
+    def divide_using_vector(self, vec):
+        s1 = self.slice1.divide_using_vector(vec)
+        s2 = self.slice2.divide_using_vector(-vec)
+
+        return s1, s2
+
 class Division:
     def __init__(self, ray, slices1, slices2, index):
         self.ray = ray # ray is only used for display purposes
@@ -375,4 +389,4 @@ class Division:
 
             return socialised_div
         else:
-            pass
+            raise NotImplemented

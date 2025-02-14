@@ -11,6 +11,11 @@ origin2 = (0, 0)
 # (324, 262) some sort of error occurs
 # (318, 578) incorrect coloring
 # (669, 220) very low error
+# (23, 427) incorrect coloring
+# (21, 310) incorrect coloring
+# [328, 498] incorrect coloring
+# [133.0, 515.0] incorrect coloring
+# CRITICAL drawing outlines for drawing the polygon is not a proper fix
 
 poly3 = [(208, 271), (319, 134), (511, 204), (326, 410)]
 origin3 = (375, 267)
