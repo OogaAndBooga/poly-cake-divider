@@ -28,23 +28,24 @@ class Window(QWidget):
         self.program_logic.pass_plot_widget_instance(self.plot_widget)
 
         #simulate user input
-        premade_polys = {
-            1:[poly1, (236, 367)],
-            2:[poly2, origin2],#(209, 314)(398, 375) long time origin: (398, 375)
-            3:[poly3, origin3],
-            4:[poly4, origin4],
-            5:[poly5, origin5]
-        }
-        n = 2
+        # premade_polys = {
+        #     1:[poly1, (236, 367)],
+        #     2:[poly2, origin2],#(209, 314)(398, 375) long time origin: (398, 375)
+        #     3:[poly3, origin3],
+        #     4:[poly4, origin4],
+        #     5:[poly5, origin5],
+        #     6:[]
+        # }
+        n = 6
         if n:
-            self.program_logic.load_poly_and_origin(premade_polys[n])
+            self.program_logic.load_poly_and_origin(poly_presets[n])
 
         main_layout = QGridLayout()
 
         Form = QWidget()
         ui = Ui_Form()
         ui.setupUi(Form)
-        ui.set_combobox_options(premade_polys)
+        ui.set_combobox_options(poly_presets)
         ui.connect_signals(self.program_logic)
 
         #what does this do?
