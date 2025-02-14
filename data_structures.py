@@ -2,11 +2,19 @@ import copy
 from math import pi
 from functools import cmp_to_key
 from math import dist, sqrt
+import numpy as np
 
 total_calculations = [0]
 
 def toTuple(vec):
-    return (float(vec.x), float(vec.y))
+    return vec.tolist()
+
+##TODO perhaps a faster solution exists
+def modulo(a):
+    return sqrt(a[0]**2 + a[1]**2)
+
+def unit(a):
+    return a / modulo(a)
 
 #TODO case in which segment is parallel to ray
 def seg_ray_intersection_math(segment, ray):
@@ -22,8 +30,8 @@ def seg_ray_intersection_math(segment, ray):
     # RuntimeWarning: invalid value encountered in scalar divide
     #   k = (abs(b) ** 2 - c @ b - (abs(a) ** 2) * (r @ b) / (a @ r)) / ((b @ r) * (a @ c) / (a @ r) - (b @ c))
 
-    k = (abs(b) ** 2 - c @ b - (abs(a) ** 2) * (r @ b) / (a @ r)) / ((b @ r) * (a @ c) / (a @ r) - (b @ c))
-    d = (abs(a) ** 2 + k * (a @ c)) / (a @ r)
+    k = (modulo(b) ** 2 - c @ b - (modulo(a) ** 2) * (r @ b) / (a @ r)) / ((b @ r) * (a @ c) / (a @ r) - (b @ c))
+    d = (modulo(a) ** 2 + k * (a @ c)) / (a @ r)
     solution = {'d':float(d), 'k':float(k)}
 
     global total_calculations
@@ -48,10 +56,12 @@ class Segment :
     def __iter__(self):
         return self.generator()
 
+    def __contains__(self, key):
+        return key is self.a or key is self.b
+
     #not a full implementation of & operator
     #2 identical segments will not return a iterable with both points
     def __and__(self, other):
-        # breakpoint()
         if not (self.a in other or self.b in other or other.a in self or other.b in self):
             return None
         else:
@@ -82,13 +92,12 @@ class Ray :
         if poly_vertex is not None and direction is not None:
             raise TypeError('do not provide both poly_vertex and direction')
         
-        if poly_vertex:
+        if poly_vertex is not None:
             self.direction = poly_vertex - origin # vector with ray direction
-        if direction:
+        if direction is not None:
             self.direction = direction
         
-        # self.sorting_angle = self.direction.phi
-        self.angle = self.direction.phi
+        self.angle = np.angle(complex(*self.direction))
 
     def gen_opposite(self):
         o_ray = Ray(self.origin, direction = -self.direction)
@@ -112,7 +121,7 @@ class Ray :
         self.intersections = []
         for seg in segments:
             if self.poly_vertex is not None:
-                ray_on_segment_edge = self.poly_vertex in seg
+                ray_on_segment_edge = self.poly_vertex is seg.a or self.poly_vertex is seg.b
             else:
                 ray_on_segment_edge = False
 
@@ -185,7 +194,7 @@ class Triangle:
     def __init__(self, rung1, rung2):
         comp = rung1.segment & rung2.segment
         points = [*rung1.segment] + [*rung2.segment]
-        self.tup = [toTuple(comp)] + [toTuple(p) for p in points if p is not comp]
+        self.tup = [comp.tolist()] + [p.tolist() for p in points if p is not comp]
         self.area = heron_area(*self.tup)
         # print(self.tup)
 
@@ -252,11 +261,11 @@ class Slice():
             l = lambda b: int(b) * 2 - 1
             
             if rung1.ray1.poly_vertex is rung2.ray1.poly_vertex:
-                return l(abs(rung1.ray2.direction) > abs(rung2.ray2.direction))
+                return l(modulo(rung1.ray2.direction) > modulo(rung2.ray2.direction))
             elif rung1.ray2.poly_vertex is rung2.ray2.poly_vertex:
-                return l(abs(rung1.ray1.direction) > abs(rung2.ray1.direction))
+                return l(modulo(rung1.ray1.direction) > modulo(rung2.ray1.direction))
             else:
-                return l(abs(rung1.ray1.direction) > abs(rung2.ray1.direction))
+                return l(modulo(rung1.ray1.direction) > modulo(rung2.ray1.direction))
 
         self.rungs.sort(key = cmp_to_key(compare_seg_origin_distance))
 
@@ -301,9 +310,9 @@ class Slice():
         self.rlist = []
         r = ratio
         ACCURACY = 0.0001
-        bound1_vec = self.ray1.direction.unit()
-        bound2_vec = self.ray2.direction.unit()
-        div_vector = (bound1_vec + bound2_vec).unit()
+        bound2_vec = unit(self.ray2.direction)
+        bound1_vec = unit(self.ray1.direction)
+        div_vector = unit(bound1_vec + bound2_vec)
         sub_slice1, sub_slice2 = self.divide_using_vector(div_vector)
         cy = 0
         while abs(self.area * r - sub_slice1.area) >= ACCURACY:
@@ -313,7 +322,7 @@ class Slice():
                 bound1_vec = div_vector
             else:
                 bound2_vec = div_vector
-            div_vector = (bound1_vec.unit() + bound2_vec.unit()).unit()
+            div_vector = unit(unit(bound1_vec) + unit(bound2_vec))
             div_ray = Ray(self.origin, direction = div_vector)
             div_ray.intersect_segments(self.original_poly_segments)
             sub_slice1, sub_slice2 = self.divide_using_vector(div_vector)

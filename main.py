@@ -3,7 +3,7 @@ from __future__ import annotations
 from PySide6.QtWidgets import (QApplication, QGridLayout,
                                QLabel, QWidget, QPushButton)
 from PySide6.QtCore import Qt
-
+import os
 # from polygon import Polygon   
 from programlogic import Program_Logic
 from render_area import RenderArea
@@ -14,6 +14,8 @@ from test_polygons import *
 
 # id_role = Qt.ItemDataRole.UserRole
 # print('IDROLEEEEEEEEEEEEEEE',id_role)
+pid = os.getpid()
+print(pid)
 
 class Window(QWidget):
     def __init__(self):

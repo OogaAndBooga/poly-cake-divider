@@ -1,6 +1,7 @@
 import vector
 import copy
 from data_structures import Ray,Segment,Division,Slice
+import numpy as np
 
 def toTuple(vec):
     return (vec.x, vec.y)
@@ -13,7 +14,7 @@ class Polygon :
     # divisions = [] #quick fix
     def __init__(self, points):
         self.points = points
-        self.vec_points = [vector.obj(x=p[0], y=p[1]) for p in self.points]
+        self.vec_points = [np.array(p) for p in self.points]
         self.gen_segments()
 
         print('POLY INIT '+30*'-')
@@ -27,7 +28,7 @@ class Polygon :
         self.segments.append(Segment(self.vec_points[-1], self.vec_points[0]))
 
     def set_origin_and_calculate_divisions(self, origin):
-        self.origin = vector.obj(x = origin[0], y = origin[1])
+        self.origin = np.array(origin)
         self.gen_rays()
         self.gen_slices()
         self.gen_divisions()
