@@ -15,7 +15,8 @@ from test_polygons import *
 # id_role = Qt.ItemDataRole.UserRole
 # print('IDROLEEEEEEEEEEEEEEE',id_role)
 pid = os.getpid()
-print(pid)
+print(f'pid: {pid}')
+os.system(f'start "spy" cmd /c "py-spy top --pid {pid}"')
 
 class Window(QWidget):
     def __init__(self):
