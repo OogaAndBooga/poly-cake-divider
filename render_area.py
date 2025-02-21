@@ -30,11 +30,11 @@ class RenderArea(QWidget):
         self.setMouseTracking(True)
 
     def minimumSizeHint(self):
-        return QSize(600, 600)
+        return QSize(900, 600)
 
     #draw window size
     def sizeHint(self):
-        return QSize(400, 400)
+        return QSize(900, 600)
 
     def pass_program_logic_instance(self, program_instance):
         self.program = program_instance

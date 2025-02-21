@@ -272,7 +272,7 @@ class Program_Logic():
             # self.display_ray_data_gen()
             # self.gen_slice_display()
             self.display_division()
-            self.update_graph()
+            # self.update_graph()
         self.update_render_area()
 
     def update_graph(self):

@@ -16,7 +16,7 @@ from test_polygons import *
 # print('IDROLEEEEEEEEEEEEEEE',id_role)
 pid = os.getpid()
 print(f'pid: {pid}')
-os.system(f'start "spy" cmd /c "py-spy top --pid {pid}"')
+os.system(f'start /MAX "spy" cmd /c "py-spy top --pid {pid}"')
 
 class Window(QWidget):
     def __init__(self):
@@ -56,7 +56,7 @@ class Window(QWidget):
         main_layout.setColumnStretch(3, 1)
 
         main_layout.addWidget(self.render_area, 0, 0, 1, 4)
-        main_layout.addWidget(self.plot_widget, 1, 1, 1, 1)
+        # main_layout.addWidget(self.plot_widget, 1, 1, 1, 1)
         main_layout.addWidget(Form, 1, 0, 1, 1)
         main_layout.setRowMinimumHeight(1, 6)
         self.setLayout(main_layout)
