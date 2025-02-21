@@ -169,6 +169,7 @@ class Program_Logic():
             t2 = time.time()
             print(f'POLY STATS --------------- ')
             print(f'CALCULATED {total_calculations[0]} INTERSECTIONS IN {round(t2-t1,2)} seconds')
+            print(f'CALLED MODULO {total_calculations[1]} times')
             print(f'POLYGON AREA: {self.poly.area}')
             print(f'NUMBER OF SLICES: {len(self.poly.slices)}')
             print(f'INDEXES OF SOCIALSIT DIVISIONS: {[d.index for d in self.poly.future_socialist_divisions]}')

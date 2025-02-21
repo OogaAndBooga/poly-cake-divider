@@ -4,14 +4,19 @@ from functools import cmp_to_key
 from math import dist, sqrt
 import numpy as np
 
-total_calculations = [0]
+total_calculations = [0, 0]
 
 def toTuple(vec):
     return vec.tolist()
 
 ##TODO perhaps a faster solution exists
+# py-spy total time is not constant, depends on some other factor
 def modulo(a):
-    return sqrt(a[0]**2 + a[1]**2)
+    # global total_calculations
+    # total_calculations[1] += 1
+    return np.linalg.norm(a)
+    # return np.abs(complex(*a))
+    # return sqrt(a[0]**2 + a[1]**2)
 
 def unit(a):
     return a / modulo(a)
