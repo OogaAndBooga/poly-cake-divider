@@ -31,18 +31,19 @@ def seg_ray_intersection_math(segment, ray):
     #TODO increase speed of computations
     #FIXME divide by zero potential error
 
-    #FIXME this error
-    # RuntimeWarning: invalid value encountered in scalar divide
-    #   k = (abs(b) ** 2 - c @ b - (abs(a) ** 2) * (r @ b) / (a @ r)) / ((b @ r) * (a @ c) / (a @ r) - (b @ c))
+    kn = (a[0] - a[1] / r[1] * r[0]) / (r[0] * c[1] / r[1] - c[0])
+    dn = c[0] * kn / r[0] + a[0] / r[0]
 
-    k = (modulo(b) ** 2 - c @ b - (modulo(a) ** 2) * (r @ b) / (a @ r)) / ((b @ r) * (a @ c) / (a @ r) - (b @ c))
-    d = (modulo(a) ** 2 + k * (a @ c)) / (a @ r)
-    solution = {'d':float(d), 'k':float(k)}
+    solution = {'d':dn, 'k':kn}
 
     global total_calculations
     total_calculations[0] += 1
-    # print(total_calculations[0], solution)
     return solution
+
+    # k = (modulo(b) ** 2 - c @ b - (modulo(a) ** 2) * (r @ b) / (a @ r)) / ((b @ r) * (a @ c) / (a @ r) - (b @ c))
+    # d = (modulo(a) ** 2 + k * (a @ c)) / (a @ r)
+    # print(f'k: {k}\nkn: {kn}\nd: {d}\ndn: {dn}\n')
+
 
 class Segment :
     def __init__(self, a, b):

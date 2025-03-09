@@ -11,7 +11,7 @@ import sys
 class RenderArea(QWidget):
     draw_packets = []
     is_counting_pixels = False
-    translatation = (0, 0)
+    translation = (0, 0)
     view_scale = 1
 
     def __init__(self, parent=None):
