@@ -12,7 +12,8 @@ from ray import Ray
 from shapes import Origin_Triangle, Quadrilateral, Triangle
 from rung import Rung
 
-from sympy import symbols, solve, solveset, Interval, init_printing
+from sympy import symbols, solve, solveset, Interval, init_printing, Pow, Poly
+from sympy.core.kind import NumberKind
 
 init_printing(use_unicode=True)
 
@@ -180,9 +181,28 @@ class Slice():
             # print(shape)
 
         e = e - self.area * ratio
-        # print(e)
-        solutions = solveset(e, r0, Interval(0, 1))
-        solutions = list(solutions)
+        e = e.cancel() # put in rational form p/q
+        if e.args[0].func == Pow: # select numerator
+            e = e.args[1]
+        else:
+            e = e.args[0]
+        p = Poly(e, r0)
+        coeffs = p.all_coeffs()
+
+        e /= coeffs[0] # reduce coeff of biggest power
+
+        p = Poly(e, r0)
+        coeffs = p.all_coeffs()
+
+        roots = np.roots(coeffs) # solve polynomial
+        solutions = []
+        for root in roots:
+            if np.isreal(root) and 0 <= root <= 1:
+                solutions.append(float(root))
+        
+        # solutions = solveset(e, r0, Interval(0, 1)) #old sympy solver
+        # solutions = list(solutions)
+
         # print(f'r0 solutions: {solutions}')
         direction_vector = self.direction_vector_from_r0(solutions[0])
         self.math_ray_list.append(Ray(self.origin, direction=direction_vector))
