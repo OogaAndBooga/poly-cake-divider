@@ -9,14 +9,14 @@ from programlogic import Program_Logic
 from render_area import RenderArea
 from graph_widget import Plot_Widget
 from poly_ui_pyside6 import Ui_Form
-
-from test_polygons import *
+from pyside_poly_database_ui import Ui_Frame as save_poly_ui_creator
+from test_polygons import * 
 
 # id_role = Qt.ItemDataRole.UserRole
 # print('IDROLEEEEEEEEEEEEEEE',id_role)
 pid = os.getpid()
 print(f'pid: {pid}')
-os.system(f'start /MAX "spy" cmd /c "py-spy top --pid {pid}"')
+# os.system(f'start /MAX "spy" cmd /c "py-spy top --pid {pid}"')
 
 class Window(QWidget):
     def __init__(self):
@@ -26,9 +26,21 @@ class Window(QWidget):
         self.render_area = RenderArea()
         self.program_logic = Program_Logic()
 
+        app_gui = QWidget()
+        ui = Ui_Form()
+        ui.setupUi(app_gui)
+        ui.set_combobox_options(poly_presets)
+        ui.connect_signals(self.program_logic)
+
+        self.poly_save_widget = QWidget()
+        cr = save_poly_ui_creator()
+        cr.setupUi(self.poly_save_widget)
+        cr.connect_signals(self.program_logic)
+
         self.render_area.pass_program_logic_instance(self.program_logic)
         self.program_logic.pass_render_area_instance(self.render_area)
         self.program_logic.pass_plot_widget_instance(self.plot_widget)
+        self.program_logic.pass_database_ui(self.poly_save_widget)
 
         #simulate user input
         # premade_polys = {
@@ -39,17 +51,11 @@ class Window(QWidget):
         #     5:[poly5, origin5],
         #     6:[]
         # }
-        n = 0
+        n = 4
         if n:
-            self.program_logic.load_poly_and_origin(poly_presets[n])
+            self.program_logic.load_poly_and_origin_from_local_file(poly_presets[n])
 
         main_layout = QGridLayout()
-
-        Form = QWidget()
-        ui = Ui_Form()
-        ui.setupUi(Form)
-        ui.set_combobox_options(poly_presets)
-        ui.connect_signals(self.program_logic)
 
         #what does this do?
         main_layout.setColumnStretch(0, 1)
@@ -57,7 +63,8 @@ class Window(QWidget):
 
         main_layout.addWidget(self.render_area, 0, 0, 1, 4)
         # main_layout.addWidget(self.plot_widget, 1, 1, 1, 1)
-        main_layout.addWidget(Form, 1, 0, 1, 1)
+        main_layout.addWidget(app_gui, 1, 0, 1, 1)
+        main_layout.addWidget(self.poly_save_widget, 1, 2, 1, 1)
         main_layout.setRowMinimumHeight(1, 6)
         self.setLayout(main_layout)
 

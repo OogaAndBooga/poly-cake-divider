@@ -1,8 +1,20 @@
-import copy
+
 from math import pi
 from functools import cmp_to_key
-from math import dist, sqrt
+# 
 import numpy as np
+
+np.seterr(all='raise')
+
+
+from segment import Segment
+from ray import Ray
+from shapes import Origin_Triangle, Quadrilateral, Triangle
+from rung import Rung
+
+from sympy import symbols, solve, solveset, Interval, init_printing
+
+init_printing(use_unicode=True)
 
 total_calculations = [0, 0]
 
@@ -11,205 +23,15 @@ def toTuple(vec):
 
 ##TODO perhaps a faster solution exists
 # py-spy total time is not constant, depends on some other factor
+# length of vector
 def modulo(a):
     # global total_calculations
     # total_calculations[1] += 1
     return np.linalg.norm(a)
-    # return np.abs(complex(*a))
-    # return sqrt(a[0]**2 + a[1]**2)
 
 def unit(a):
     return a / modulo(a)
 
-#TODO case in which segment is parallel to ray
-def seg_ray_intersection_math(segment, ray):
-    a = segment.a - ray.origin
-    b = segment.b - ray.origin
-    c = segment.c
-    r = ray.direction
-
-    #TODO increase speed of computations
-    #FIXME divide by zero potential error
-
-    kn = (a[0] - a[1] / r[1] * r[0]) / (r[0] * c[1] / r[1] - c[0])
-    dn = c[0] * kn / r[0] + a[0] / r[0]
-
-    solution = {'d':dn, 'k':kn}
-
-    global total_calculations
-    total_calculations[0] += 1
-    return solution
-
-    # k = (modulo(b) ** 2 - c @ b - (modulo(a) ** 2) * (r @ b) / (a @ r)) / ((b @ r) * (a @ c) / (a @ r) - (b @ c))
-    # d = (modulo(a) ** 2 + k * (a @ c)) / (a @ r)
-    # print(f'k: {k}\nkn: {kn}\nd: {d}\ndn: {dn}\n')
-
-
-class Segment :
-    def __init__(self, a, b):
-        self.a = a
-        self.b = b
-        self.c = b - a
-
-    def ray_intersection_math(self, ray):
-        solution = seg_ray_intersection_math(self, ray)
-        return solution
-
-    def generator(self):
-        yield self.a
-        yield self.b
-
-    def __iter__(self):
-        return self.generator()
-
-    def __contains__(self, key):
-        return key is self.a or key is self.b
-
-    #not a full implementation of & operator
-    #2 identical segments will not return a iterable with both points
-    def __and__(self, other):
-        if not (self.a in other or self.b in other or other.a in self or other.b in self):
-            return None
-        else:
-            if self.a in other:
-                return self.a
-            if self.b in other:
-                return self.b
-            if other.a in self:
-                return other.a
-            if other.b in self:
-                return other.b
-
-class Intersection:
-    def __init__(self, point, segment):
-        self.point = point
-        self.segment = segment
-
-class Ray :
-    intersections = []
-    flipped = False
-    def __init__(self, origin, poly_vertex = None, direction = None):
-        self.origin = origin
-        self.poly_vertex = poly_vertex
-        
-        if poly_vertex is None and direction is None:
-            raise TypeError('either a direction or a poly_vertex must be provided')
-        
-        if poly_vertex is not None and direction is not None:
-            raise TypeError('do not provide both poly_vertex and direction')
-        
-        if poly_vertex is not None:
-            self.direction = poly_vertex - origin # vector with ray direction
-        if direction is not None:
-            self.direction = direction
-        
-        self.angle = np.angle(complex(*self.direction))
-
-    def gen_opposite(self):
-        o_ray = Ray(self.origin, direction = -self.direction)
-        return o_ray
-
-    #TODO this function is not used anywhere, i am not 100% certain that it works
-    def intersects_slice(self, slice):
-        if self.origin != slice.origin:
-            raise RuntimeError('slice.origin and ray.origin must be the same')
-        
-        # each ray is rotated away from the slice area
-        p1 = slice.ray1.direction.rotateZ(-pi / 2)
-        p2 = slice.ray2.direction.rotateZ(pi / 2)
-
-        r = p1 @ self.direction > 0 and p2 @ self.direction > 0
-        # print(f'p1: {slice.ray1.angle}\nself: {self.angle}\np2: {slice.ray2.angle}\n r: {r}\n')
-        return r
-
-    #TODO create self.intersections_opposite for clearer code?
-    def intersect_segments(self, segments):
-        self.intersections = []
-        for seg in segments:
-            if self.poly_vertex is not None:
-                ray_on_segment_edge = self.poly_vertex is seg.a or self.poly_vertex is seg.b
-            else:
-                ray_on_segment_edge = False
-
-            if ray_on_segment_edge:
-                self.intersections += [Intersection(self.poly_vertex, seg)]
-            else:
-                sol = seg.ray_intersection_math(self)
-                d = sol['d']
-                k = sol['k']
-
-                if 0 <= k <= 1 and 0 < d:
-                    self.intersections.append(
-                        Intersection(self.origin + self.direction * d, seg)
-                    )
-
-    def gen_oriented_line_tuple(self):
-        r = self
-        dir = r.direction * 100
-        a = r.origin + dir
-        b = r.origin
-        # b = r.origin - dir
-        return (toTuple(a), toTuple(b))
-    
-    def gen_line_tuple(self):
-        r = self
-        dir = r.direction * 6100
-        a = r.origin + dir
-        b = r.origin - dir
-        return (toTuple(a), toTuple(b))
-
-class Rung:
-    def __init__(self, origin, segment):
-        self.segment = segment
-        a, b = segment
-        # self.segment = Segment(a, b)
-        self.ray1 = Ray(origin, a)
-        self.ray2 = Ray(origin, b)
-        self.origin = origin
-        self.a = a
-        self.b = b
-    #a, b and __iter__ are for backwards compatibility, with 1 use case in Quadrilateral
-    def generator(self):
-        yield self.ray1.poly_vertex
-        yield self.ray2.poly_vertex
-
-    def __iter__(self):
-        return self.generator()
-
-#points as tuples
-def heron_area(p1, p2, p3):
-    a = dist(p1, p2)
-    b = dist(p2, p3)
-    c = dist(p3, p1)
-    s = (a + b + c) / 2
-    return sqrt(s * (s - a) * (s - b) * (s - c))
-
-class Quadrilateral:
-    def __init__(self, rung1, rung2):
-        self.rung1 = rung1
-        self.rung2 = rung2
-        self.tup = [toTuple(p) for p in[rung1.a, rung1.b, rung2.b, rung2.a]]
-        self.area = (
-            heron_area(*[toTuple(p) for p in[*rung1, rung2.a]]) +
-            heron_area(*[toTuple(p) for p in[*rung2, rung1.b]])
-        )
-
-#TODO store data for future calculations
-#assumes rungs have 1 point in common
-class Triangle:
-    def __init__(self, rung1, rung2):
-        comp = rung1.segment & rung2.segment
-        points = [*rung1.segment] + [*rung2.segment]
-        self.tup = [comp.tolist()] + [p.tolist() for p in points if p is not comp]
-        self.area = heron_area(*self.tup)
-        # print(self.tup)
-
-class Origin_Triangle:
-    def __init__(self, origin, rung):
-        self.origin = origin
-        self.rung = rung
-        self.tup = [toTuple(p) for p in [origin, *rung]]
-        self.area = heron_area(*self.tup)
 
 class Slice():
     opposite = None
@@ -232,6 +54,7 @@ class Slice():
     @property
     def is_empty(self):
         return self._is_empty
+    
     def gen_rungs(self):
         self.rungs = []
         self.original_poly_segments = []
@@ -254,7 +77,7 @@ class Slice():
                     int2 = i
                     break
 
-            self.rungs += [Rung(self.origin, Segment(int1.point, int2.point))]
+            self.rungs.append(Rung(self.origin, Segment(int1.point, int2.point)))
             self.original_poly_segments += [cseg]
 
 
@@ -272,6 +95,7 @@ class Slice():
                 return l(modulo(rung1.ray1.direction) > modulo(rung2.ray1.direction))
             else:
                 return l(modulo(rung1.ray1.direction) > modulo(rung2.ray1.direction))
+            
 
         self.rungs.sort(key = cmp_to_key(compare_seg_origin_distance))
 
@@ -309,13 +133,13 @@ class Slice():
         return sub_slice1, sub_slice2
 
     def divide_using_ratio(self, ratio):
-        print('divide by ratio ---------------- ')
-        print(f'slice area: {self.area}')
-        print(f'r: {ratio}')
+        # print('\ndivide by ratio ---------------- ')
+        # print(f'slice area: {self.area}')
+        # print(f'r: {ratio}')
 
         self.rlist = []
         r = ratio
-        ACCURACY = 0.0001
+        ACCURACY = 0.0000000001
         bound2_vec = unit(self.ray2.direction)
         bound1_vec = unit(self.ray1.direction)
         div_vector = unit(bound1_vec + bound2_vec)
@@ -333,11 +157,48 @@ class Slice():
             div_ray.intersect_segments(self.original_poly_segments)
             sub_slice1, sub_slice2 = self.divide_using_vector(div_vector)
 
-        print(f'max error: {ACCURACY}')
-        print(f'iterations to converge: {cy}')
+        # print(f'max error: {ACCURACY}')
+        # print(f'iterations to converge: {cy}')
 
-        return sub_slice1, sub_slice2
+        return sub_slice1, sub_slice2, div_vector
 
+    def gen_rung_0(self):
+        if type(self.shapes[0]) == Origin_Triangle:
+            self.rung0 = self.shapes[0].rung
+        else:
+            self.rung0 = self.shapes[0].rung1
+
+    def divide_using_ratio_expression(self, ratio):
+        self.math_ray_list = []
+
+        r0 = symbols('r0')
+        self.gen_rung_0()
+        
+        e = 0
+        for shape in self.shapes:
+            e += shape.gen_sympy_area_expression(r0, self.origin, self.rung0)
+            # print(shape)
+
+        e = e - self.area * ratio
+        # print(e)
+        solutions = solveset(e, r0, Interval(0, 1))
+        solutions = list(solutions)
+        # print(f'r0 solutions: {solutions}')
+        direction_vector = self.direction_vector_from_r0(solutions[0])
+        self.math_ray_list.append(Ray(self.origin, direction=direction_vector))
+
+        sub_slice1, sub_slice2 = self.divide_using_vector(direction_vector)
+        return sub_slice1, sub_slice2, direction_vector
+
+    def direction_vector_from_r0(self, r0):
+        # print(f'r0passed: {r0}')
+        self.gen_rung_0()
+        dir = self.rung0.segment.c * float(r0) + self.rung0.a - self.origin
+        # print(unit(self.rung0.segment.c * float(1-r0) + self.rung0.a))
+        return unit(dir)
+
+
+# ??? why did i make this
 class UncutPizzaSlices :
     def __init__(self, slices):
         self.slices = slices
@@ -352,19 +213,25 @@ class UncutPizzaSlices :
 
 class Bowtie :
     def __init__(self, slice1, slice2):
-        if slice1.origin != slice2.origin:
+        if not (slice1.origin == slice2.origin).all():
             raise RuntimeError('the origins must be the same')
+        self.area = slice1.area + slice2.area
+        self.area1 = slice1.area
+        self.area2 = slice2.area
         self.slice2 = slice2
         self.slice1 = slice1
         self.origin = slice1.origin
 
     def divide_using_vector(self, vec):
-        s1 = self.slice1.divide_using_vector(vec)
-        s2 = self.slice2.divide_using_vector(-vec)
+        s1a, s1b = self.slice1.divide_using_vector(vec)
+        s2a, s2b = self.slice2.divide_using_vector(-vec)
 
-        return s1, s2
+        b1 = Bowtie(s1a, s2a)
+        b2 = Bowtie(s1b, s2b)
+        return b1, b2
 
 class Division:
+    rung0 = None
     def __init__(self, ray, slices1, slices2, index):
         self.ray = ray # ray is only used for display purposes
         self.index = index
@@ -387,13 +254,28 @@ class Division:
         self.total_area = self.area1 + self.area2
         self.half_area = self.total_area / 2
 
+        self.bowtie = Bowtie(self.cut_slice_1, self.cut_slice_2)
+
+        self.math_ray_list = []
+
     def gen_socialised_division(self):
         # print (self.cut_slice_1.is_empty, self.cut_slice_2.is_empty)
-
+        
         if self.cut_slice_1.is_empty + self.cut_slice_2.is_empty == 1:
+            if self.cut_slice_1.is_empty:
+                return None
             slice = self.slices1[0]
+            # try:
             r = (self.half_area - self.area2) / slice.area
-            sub_slice1, sub_slice2 = slice.divide_using_ratio(r)
+            # except:
+            #     breakpoint(0)
+            sub_slice1, sub_slice2, d_1 = slice.divide_using_ratio(r)
+            _, _, d_2 = slice.divide_using_ratio_expression(r)
+            # print('2 division vectors!!! '+'-'*10)
+            print('\ndivision ray orientation')
+            print(f'solution 1: {d_1}')
+            print(f'solution 2: {d_2}')
+            # print(d_1, d_2)
             socialised_div = Division(
                 None,
                 self.slices1[1:] + [sub_slice2],
@@ -401,7 +283,31 @@ class Division:
                 self.index
             )
             socialised_div.rlist = slice.rlist #list of division ray iterations
+            socialised_div.math_ray_list = slice.math_ray_list
+            socialised_div.rung0 = slice.rung0
 
             return socialised_div
         else:
-            raise NotImplemented
+            s1 = self.cut_slice_1
+            s2 = self.cut_slice_2
+            sbowtie = self.bowtie
+
+            def vector_fan(v1, v2, exp2):
+                mid = unit(v1 + v2)
+                if exp2 <= 0:
+                    return [mid]
+                return vector_fan(v1, mid, exp2 - 1) + vector_fan(mid, v2, exp2 - 1)
+
+            exp2 = 6
+            vec_fan = vector_fan(unit(s1.ray1.direction), unit(s1.ray2.direction), exp2)
+            
+            area_per_vec = []
+            for v in vec_fan:
+                b1, b2 = sbowtie.divide_using_vector(v)
+                area_per_vec.append(b2.area1 + b1.area2)
+
+            self.bowtie.area_per_vec = area_per_vec
+
+            self.rlist = [self.cut_slice_1.ray1]
+            return self
+            # raise NotImplemented

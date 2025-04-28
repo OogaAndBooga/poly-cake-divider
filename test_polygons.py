@@ -3,7 +3,10 @@
 poly1 = [(188, 337), (110, 269), (105, 215), (135, 147), (172, 113), (221, 91), (252, 135), (250, 208), (248, 244), (277, 272), (334, 245), (335, 188), (353, 96), (413, 83), (468, 177), (418, 269), (386, 322), (345, 335), (316, 325), (255, 311), (218, 279), (200, 213), (185, 165), (168, 166), (147, 201), (153, 244), (176, 269), (211, 317), (303, 373), (395, 368), (446, 248), (489, 308), (473, 366), (446, 356), (429, 424), (508, 474), (399, 552), (314, 518), (269, 442), (324, 420), (181, 422), (150, 454), (78, 444), (82, 381), (193, 393)]
 
 poly2 = [(160, 335), (94, 272), (159, 177), (179, 76), (318, 68), (412, 130), (487, 115), (553, 175), (514, 283), (560, 349), (543, 451), (458, 514), (421, 433), (471, 348), (401, 282), (466, 163), (280, 164), (322, 240), (234, 246), (362, 327), (343, 471), (228, 529), (271, 420), (318, 383), (236, 333), (174, 444), (89, 422), (35, 377), (131, 387), (107, 353)]
-origin2 = (0, 0)
+origin2 = [199.0, 246.0]
+# heron area error [493.683665888892, 416.84020183635454]
+# origin2 = (0, 0)
+
 #origin = (363, 515) for divide by zero errors
 # (274, 331) dvzerror
 #(586, 419) dvzerror
@@ -16,6 +19,20 @@ origin2 = (0, 0)
 # [328, 498] incorrect coloring
 # [133.0, 515.0] incorrect coloring
 # CRITICAL drawing outlines for drawing the polygon is not a proper fix
+
+# [326.0, 274.0] something heron error
+
+# ORIGIN POSITION: [474.0, 420.0]
+# c:\Users\teofi\Desktop\polygon program\data_structures.py:34: RuntimeWarning: divide by zero encountered in scalar divide
+#   kn = (a[0] - a[1] / r[1] * r[0]) / (r[0] * c[1] / r[1] - c[0])
+# c:\Users\teofi\Desktop\polygon program\data_structures.py:34: RuntimeWarning: invalid value encountered in scalar divide
+#   kn = (a[0] - a[1] / r[1] * r[0]) / (r[0] * c[1] / r[1] - c[0])
+
+# ORIGIN POSITION: [505.0, 383.0]
+# c:\Users\teofi\Desktop\polygon program\data_structures.py:34: RuntimeWarning: divide by zero encountered in scalar divide
+#   kn = (a[0] - a[1] / r[1] * r[0]) / (r[0] * c[1] / r[1] - c[0])
+# c:\Users\teofi\Desktop\polygon program\data_structures.py:34: RuntimeWarning: invalid value encountered in scalar divide
+#   kn = (a[0] - a[1] / r[1] * r[0]) / (r[0] * c[1] / r[1] - c[0])
 
 poly3 = [(208, 271), (319, 134), (511, 204), (326, 410)]
 origin3 = (375, 267)

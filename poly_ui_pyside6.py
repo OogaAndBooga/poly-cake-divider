@@ -70,8 +70,8 @@ class Ui_Form(object):
 
     def retranslateUi(self, Form):
         Form.setWindowTitle(QCoreApplication.translate("Form", u"Form", None))
-        self.pushButton.setText(QCoreApplication.translate("Form", u"Toggle poly display", None))
-        self.label.setText(QCoreApplication.translate("Form", u"Load poly", None))
+        self.pushButton.setText(QCoreApplication.translate("Form", u"Explanation mode", None))
+        self.label.setText(QCoreApplication.translate("Form", u"Load example polygon", None))
     # retranslateUi
 
     def set_combobox_options(self, options):
@@ -86,7 +86,7 @@ class Ui_Form(object):
 
         def load_poly():
             data = self.comboBox.itemData(self.comboBox.currentIndex())
-            program_logic.load_poly_and_origin(data)
+            program_logic.load_poly_and_origin_from_local_file(data)
         self.comboBox.activated.connect(load_poly)
 
 if __name__ == '__main__':

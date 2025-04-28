@@ -23,10 +23,10 @@ class Plot_Widget(pg.PlotWidget):
         plotdataitem = p1
 
         self.line = pg.InfiniteLine(0)
-        self.addItem(self.line)
+        # self.addItem(self.line)
 
         self.line2 = pg.InfiniteLine(0)
-        self.addItem(self.line2)
+        # self.addItem(self.line2)
         # plotitem.scene().connect(self.clicke)
         #emits signal only if plot is clicked
         # plotdataitem.sigClicked.connect(self.clicke)

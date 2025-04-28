@@ -4,10 +4,6 @@ from PySide6.QtGui import (QBrush, QPainter,
 
 from PySide6.QtWidgets import QWidget
 
-import sys
-
-#TODO process keyboard inputs in Window widget
-
 class RenderArea(QWidget):
     draw_packets = []
     is_counting_pixels = False

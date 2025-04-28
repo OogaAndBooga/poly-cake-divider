@@ -10,6 +10,9 @@ from PySide6.QtCore import  Qt
 import cv2 as cv
 import numpy as np
 
+from select_poly_dialog import Select_poly_dialog_creator
+from database import DataBase
+
 def toTuple(vec):
     if type(vec) == Segment:
         return (toTuple(vec.a), toTuple(vec.b))
@@ -37,19 +40,19 @@ class Program_Logic():
     origin = None #one of the defining points for division
     origin_is_set = False
     MOUSENEARDIST = 10
-    display_socialised_division = False
-    # tempbowtiedata = []
-    # tempbowtielines = []
-    # tempbowtieshapes = []
-    # redpoints = []
+    display_socialised_division = True
+
     def __init__(self):
-        pass
+        self.database = DataBase()
 
     def pass_render_area_instance(self, r_area_instance):
         self.render_area = r_area_instance
 
     def pass_plot_widget_instance(self, plot_widget):
         self.plot_widget = plot_widget
+
+    def pass_database_ui(self, db_ui):
+        self.database_ui = db_ui
 
     # 0 = input polyline
     # 1 = set origin
@@ -81,7 +84,7 @@ class Program_Logic():
                 if 0 > self.sindex or self.sindex >= len(self.poly.slices):
                     self.sindex %= len(self.poly.slices)
                 
-                print(f'Slice Index: {self.sindex}/{len(self.poly.slices) - 1}')
+                # print(f'Slice Index: {self.sindex}/{len(self.poly.slices) - 1}')
                 self.plot_widget.set_btindex(self.sindex)
         else :
             self.reset_to_stage(0)
@@ -89,7 +92,8 @@ class Program_Logic():
 
     def input_origin_as_string(self, sorigin : str):
         origin = eval(sorigin)
-        self.click_event(origin)
+        self.click_event_poly_coords(origin)
+        # self.click_event(origin)
 
     def wheel_event(self, scrpos, angle_delta):
         initial_scale = self.scale_amount
@@ -146,17 +150,22 @@ class Program_Logic():
         # take scale and translation into account
         pos = self.screen_pos_to_poly_pos(pos)
         pos = pos.tolist()
+        self.click_event_poly_coords(pos)
 
+    def click_event_poly_coords(self, poly_pos):
+        pos = poly_pos
         if self.stage == 0:
             if not self.mouse_near:
                 self.polyline.append(pos)
             else:
                 self.advance_stage()
                 self.poly = Polygon(self.polyline)
+                print('POLY INIT '+30*'-')
                 print(self.polyline)
             self.update_screen()
         # elif self.stage == 1:
         elif self.stage in [1, 2]:
+            print('\n')
             print(f"ORIGIN POSITION: {pos}")
             self.origin = pos
             self.origin_is_set = True
@@ -167,22 +176,51 @@ class Program_Logic():
             t1 = time.time()
             self.poly.set_origin_and_calculate_divisions(self.origin)
             t2 = time.time()
-            print(f'POLY STATS --------------- ')
-            print(f'CALCULATED {total_calculations[0]} INTERSECTIONS IN {round(t2-t1,2)} seconds')
-            print(f'CALLED MODULO {total_calculations[1]} times')
+            print(f'\nPOLY STATS --------------- ')
+            print(f'TIME: {round(t2-t1,3)} seconds')
+            # print(f'CALCULATED {total_calculations[0]} INTERSECTIONS IN {round(t2-t1,2)} seconds')
+            # print(f'CALLED MODULO {total_calculations[1]} times')
             print(f'POLYGON AREA: {self.poly.area}')
             print(f'NUMBER OF SLICES: {len(self.poly.slices)}')
-            print(f'INDEXES OF SOCIALSIT DIVISIONS: {[d.index for d in self.poly.future_socialist_divisions]}')
+            # print(f'INDEXES OF SOCIALSIT DIVISIONS: {[d.index for d in self.poly.future_socialist_divisions]}')
             sd = self.poly.socialised_divisions[0]
+
             print(f'area1: {sd.area1}')
             print(f'area2 = {sd.area2}')
+            # print(f'case 2 potential div: {len(self.poly.potential_socialist_divisions_case_2)}')
             if self.stage == 1:
                 self.advance_stage()
             self.update_screen()
 
-            self.count_pixels()
 
-    def load_poly_and_origin(self, data):
+    def show_load_poly_ui(self):
+        #vfetch and prepare data for dialot
+        poly_data = self.database.load_polygons()
+        # print(poly_data)
+        id_names = []
+        for id in range(len(poly_data)):
+            name = poly_data[id]["name"]
+            id_names.append({"id" : id + 1, "name" : name})
+
+        # run dialog
+        select_poly_dialog = Select_poly_dialog_creator(id_names)
+        selected_id = select_poly_dialog.exec()
+        print(selected_id)
+        if selected_id != 0:
+            polyline = poly_data[selected_id - 1]['points']
+            self.set_poly(polyline)
+
+        # print(selected)
+        # print('exexutes')
+
+    def set_poly(self, polyline, origin = (50, 50)):
+        self.polyline = polyline
+        self.mouse_near = True
+        self.stage = 0
+        self.click_event(polyline[0])
+        # self.click_event(origin)
+
+    def load_poly_and_origin_from_local_file(self, data):
         poly = data[0]
         origin = data[1]
         self.polyline = poly
@@ -190,6 +228,11 @@ class Program_Logic():
         self.stage = 0
         self.click_event(poly[0])
         self.click_event(origin)
+
+    def save_poly(self, name):
+        print(name)
+        # name = self.database_ui.poly_name_line_edit.text()
+        self.database.save_poly(name, self.poly.points)
 
     def count_pixels(self):
         self.display_socialised_division = True
@@ -211,6 +254,8 @@ class Program_Logic():
         green = np.sum(img[:,:,1] == 255)
         red = np.sum(img[:,:,2] == 255)
 
+        print()
+        print('COUNTING PIXELS' + '-'*10)
         print(f'red PIXELS: {red}')
         print(f'green PIXELS: {green}')
         print(f'TOTAL PIXELS = {red + green}')
@@ -218,7 +263,7 @@ class Program_Logic():
         print(f'abs delta: {d}')
         print(f'rel delta: {round(d / (red + green) * 100, 2)}%')
 
-        cv.imshow('asd', img)
+        cv.imshow('Counting Pixels', img)
         # k = cv.waitKey(0)
 
     def toggle_div_display(self):
@@ -266,27 +311,46 @@ class Program_Logic():
         ray = div.ray
         self.division_ray = ray.gen_line_tuple()
 
+        ds = div.slices1[0]
+        self.division_rays = [ds.ray1.gen_line_tuple(), ds.ray2.gen_line_tuple()]
+
     def update_screen(self):
         if self.stage == 2:
             # self.display_bowtie_data_gen()
             # self.display_ray_data_gen()
             # self.gen_slice_display()
             self.display_division()
-            # self.update_graph()
+            self.update_graph()
         self.update_render_area()
 
     def update_graph(self):
-        indexes = range(len(self.poly.slices))
+        return
+        try:
+            sd = self.poly.potential_socialist_divisions_case_2[0]
+            data = sd.bowtie.area_per_vec
+            # data = []
+            # print(data)
+            ind = range(len(data))
+            print(f'indexes: {ind}')
+            print(len(sd.bowtie.area_per_vec))
+            self.plot_widget.plot1.setData(ind, data)
+        except:
+            print('the rgraph widget did not update!! 281 programlogic.py')
+            self.plot_widget.plot1.setData([], [])
+            pass
 
-        a1 = [d.area1 for d in self.poly.divisions]
-        a2 = [d.area2 for d in self.poly.divisions]
-        a3 = [d.total_area for d in self.poly.divisions]
+        # self.po
+        # indexes = range(len(self.poly.slices))
 
-        self.plot_widget.plot1.setData(indexes, a1)
-        self.plot_widget.plot2.setData(indexes, a2)
-        self.plot_widget.plot3.setData(indexes, a3)
+        # a1 = [d.area1 for d in self.poly.divisions]
+        # a2 = [d.area2 for d in self.poly.divisions]
+        # a3 = [d.total_area for d in self.poly.divisions]
 
-        self.plot_widget.set_line2(self.poly.future_socialist_divisions[0].index)
+        # self.plot_widget.plot1.setData(indexes, a1)
+        # self.plot_widget.plot2.setData(indexes, a2)
+        # self.plot_widget.plot3.setData(indexes, a3)
+
+        # self.plot_widget.set_line2(self.poly.future_socialist_divisions[0].index)
         self.plot_widget.update()
 
     def update_render_area(self):
@@ -320,7 +384,8 @@ class Program_Logic():
 
             green = Paint_Kit(QPen(Qt.PenStyle.NoPen), QBrush(Qt.green, Qt.CrossPattern))
             red = Paint_Kit(QPen(Qt.PenStyle.NoPen), QBrush(Qt.red, Qt.CrossPattern))
-            purple = Paint_Kit(QPen('blue'))
+            blue = Paint_Kit(QPen('blue'))
+            purple = Paint_Kit(QPen('purple'))
             pink = Paint_Kit(QPen(Qt.PenStyle.NoPen), QBrush('pink', Qt.CrossPattern))
             orange = Paint_Kit(QPen('orange'))
 
@@ -338,7 +403,8 @@ class Program_Logic():
                 if not self.display_socialised_division:
                     green.polygons += self.division_shapes_1
                     red.polygons += self.division_shapes_2
-                    purple.lines.append(self.division_ray)
+                    blue.lines.append(self.division_rays[0])
+                    blue.lines.append(self.division_rays[1])
                     pink.polygons += self.pink_center_shapes
                 else:
                     sd = self.poly.socialised_divisions[0]
@@ -350,9 +416,13 @@ class Program_Logic():
                 s = [a.gen_line_tuple() for a in self.poly.rlist]
                 # print(s)
                 # orange.lines += s
-                orange.lines += [s[-1]]
+                if self.display_socialised_division:
+                    orange.lines += [s[-1]]
+                    purple.lines += [a.gen_line_tuple() for a in self.poly.math_ray_list]
+                    if self.poly.rung0 is not None:
+                        purple.lines.append(self.poly.rung0.segment.gen_tuple())
 
-            for color in [black, red, green, purple, pink, orange]:
+            for color in [black, red, green, blue, pink, orange, purple]:
                 draw_packets.append(color)
 
             if self.is_counting_pixels:
