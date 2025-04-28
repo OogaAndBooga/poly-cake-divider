@@ -51,7 +51,7 @@ class Window(QWidget):
         #     5:[poly5, origin5],
         #     6:[]
         # }
-        n = 4
+        n = 0
         if n:
             self.program_logic.load_poly_and_origin_from_local_file(poly_presets[n])
 
