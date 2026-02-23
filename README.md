@@ -1,9 +1,9 @@
 # Proiect Atestat
-A work in progress.
 
 Ever had the need to cut a polygonal cake into two equal parts using only one slice? Well this program will help you do that. 
 
-demo executable [here](https://github.com/OogaAndBooga/poly-cake-divider/releases/tag/test-tag).
+executable [here](https://github.com/OogaAndBooga/poly-cake-divider/releases/tag/prezentation).
 
-![image](https://github.com/user-attachments/assets/31d0d580-c1de-44be-92af-163cb73151bb)
+<img width="1920" height="1038" alt="image" src="https://github.com/user-attachments/assets/dc90d4db-b165-48f6-8adb-53c4c2dad6dc" />
+
 
